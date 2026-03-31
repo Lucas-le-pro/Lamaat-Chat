@@ -1,4 +1,3 @@
-
 const express    = require('express');
 const http       = require('http');
 const { Server } = require('socket.io');
@@ -50,6 +49,8 @@ app.post('/api/register', async (req, res) => {
     return res.status(400).json({ error: 'Pseudo : 2 à 20 caractères' });
   if (password.length < 4)
     return res.status(400).json({ error: 'Mot de passe trop court (min 4 caractères)' });
+  if (/^lamaabot/i.test(username))
+    return res.status(400).json({ error: 'Ce pseudo est réservé' });
 
   const existing = queries.getUserByName.get(username);
   if (existing) return res.status(409).json({ error: 'Pseudo déjà utilisé' });
