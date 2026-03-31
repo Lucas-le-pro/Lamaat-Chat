@@ -5,7 +5,7 @@ const bcrypt     = require('bcryptjs');
 const jwt        = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const path       = require('path');
-const { queries } = require('./db');
+const { queries, db } = require('./db');
 const { handleMessage, botUser } = require('./bot');
 
 const app    = express();
@@ -82,7 +82,7 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Champs manquants' });
 
-  const user = queries.getUserByName.get(username);
+  const user = db.prepare('SELECT * FROM users WHERE LOWER(username) = LOWER(?)').get(username);
   if (!user) return res.status(401).json({ error: 'Identifiants incorrects' });
 
   const ok = await bcrypt.compare(password, user.password);
