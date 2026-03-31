@@ -1,3 +1,4 @@
+
 const express    = require('express');
 const http       = require('http');
 const { Server } = require('socket.io');
@@ -6,6 +7,7 @@ const jwt        = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const path       = require('path');
 const { queries } = require('./db');
+const { handleMessage, botUser } = require('./bot');
 
 const app    = express();
 const server = http.createServer(app);
@@ -59,6 +61,14 @@ app.post('/api/register', async (req, res) => {
 
   // Ajouter au salon Général (id=1)
   queries.addMember.run(1, userId);
+
+  // Créer DM privé avec le bot
+  const botDmName = `dm_${Math.min(userId, botUser.id)}_${Math.max(userId, botUser.id)}`;
+  const botDm = queries.createRoom.run(botDmName, 1, userId);
+  const botRoomId = botDm.lastInsertRowid;
+  queries.addMember.run(botRoomId, userId);
+  queries.addMember.run(botRoomId, botUser.id);
+  queries.insertMsg.run(botRoomId, botUser.id, `Salut ${username} ! 👋 Je suis LamaaBot, ton assistant perso. Pose-moi tes questions ici, je répondrai !`);
 
   const user  = { id: userId, username };
   const token = makeToken(user);
@@ -169,7 +179,7 @@ app.get('/api/rooms/:id/members', authMiddleware, (req, res) => {
 
 // Liste de tous les utilisateurs
 app.get('/api/users', authMiddleware, (req, res) => {
-  res.json(queries.getAllUsers.all());
+  res.json(queries.getAllUsers.all().filter(u => u.id !== botUser.id));
 });
 
 // ── Socket.io ─────────────────────────────────────────────────
@@ -213,7 +223,7 @@ io.on('connection', socket => {
     if (!content || !content.trim()) return;
     if (!queries.isMember.get(roomId, user.id)) return;
 
-    const text = content.trim().slice(0, 2000);
+    const text = content.trim().slice(0, 500000); // audio base64 peut être grand
     const result = queries.insertMsg.run(roomId, user.id, text);
     const msg = {
       id: result.lastInsertRowid,
@@ -226,6 +236,12 @@ io.on('connection', socket => {
     };
     io.to(`room:${roomId}`).emit('message', msg);
 
+    // Bot : détecter si c'est un DM privé bot
+    if (!text.startsWith('data:audio/')) {
+      const roomMembers = queries.getMembers.all(roomId);
+      const isBotDM = roomMembers.length === 2 && roomMembers.some(m => m.id === botUser.id);
+      handleMessage(io, roomId, user.id, text, isBotDM);
+    }
   });
 
   // Rejoindre un nouveau salon (après création)
@@ -236,6 +252,32 @@ io.on('connection', socket => {
   // Indicateur de frappe
   socket.on('typing', ({ roomId, typing }) => {
     socket.to(`room:${roomId}`).emit('typing', { userId: user.id, username: user.username, typing });
+  });
+
+  // ── WebRTC signaling ────────────────────────────────────────
+  function toUser(userId, event, data) {
+    for (const [sid, u] of onlineUsers) {
+      if (u.id === userId) io.to(sid).emit(event, data);
+    }
+  }
+
+  socket.on('call_request', ({ toUserId }) => {
+    toUser(toUserId, 'call_incoming', { fromUserId: user.id, fromName: user.username, fromAvatar: user.avatar });
+  });
+  socket.on('call_offer', ({ toUserId, sdp }) => {
+    toUser(toUserId, 'call_offer', { fromUserId: user.id, sdp });
+  });
+  socket.on('call_answer', ({ toUserId, sdp }) => {
+    toUser(toUserId, 'call_answer', { sdp });
+  });
+  socket.on('call_ice', ({ toUserId, candidate }) => {
+    toUser(toUserId, 'call_ice', { candidate });
+  });
+  socket.on('call_reject', ({ toUserId }) => {
+    toUser(toUserId, 'call_rejected', {});
+  });
+  socket.on('call_end', ({ toUserId }) => {
+    toUser(toUserId, 'call_ended', {});
   });
 
   socket.on('disconnect', () => {
