@@ -210,7 +210,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <p id="auth-subtitle">Connecte-toi pour rejoindre tes potes</p>
 
     <div id="form-login">
-      <div class="field"><label>Pseudo</label><input id="l-user" type="text" autocomplete="username" placeholder="Ton pseudo"></div>
+      <div class="field"><label>Pseudo</label><input id="l-user" type="text" autocomplete="username" placeholder="Ton pseudo" autocorrect="off" autocapitalize="none" spellcheck="false"></div>
       <div class="field"><label>Mot de passe</label><input id="l-pass" type="password" autocomplete="current-password" placeholder="••••••"></div>
       <div class="err" id="l-err"></div>
       <button class="btn" onclick="doLogin()">Connexion</button>
@@ -218,7 +218,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     </div>
 
     <div id="form-register" style="display:none">
-      <div class="field"><label>Pseudo (2-20 caractères)</label><input id="r-user" type="text" autocomplete="username" placeholder="Ton pseudo"></div>
+      <div class="field"><label>Pseudo (2-20 caractères)</label><input id="r-user" type="text" autocomplete="username" placeholder="Ton pseudo" autocorrect="off" autocapitalize="none" spellcheck="false"></div>
       <div class="field"><label>Mot de passe</label><input id="r-pass" type="password" autocomplete="new-password" placeholder="Min 4 caractères"></div>
       <div class="field"><label>Ton avatar</label>
         <div class="avatar-row" id="avatar-row"></div>
