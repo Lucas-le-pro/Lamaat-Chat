@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -173,6 +174,31 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* Toast */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#21262d;border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:20px;font-size:.85rem;opacity:0;transition:opacity .3s;z-index:300;pointer-events:none}
 #toast.show{opacity:1}
+
+/* ── VOICE MESSAGE ───────────────────────────────────────── */
+.msg-audio audio{max-width:100%;width:210px;height:36px;outline:none;border-radius:20px;display:block}
+#btn-voice{background:none;border:none;color:var(--text-muted);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1.2rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s}
+#btn-voice:hover{color:var(--primary)}
+#btn-voice.recording{color:var(--danger);background:rgba(248,81,73,0.12);animation:pulse .9s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+
+/* ── CALL ────────────────────────────────────────────────── */
+#btn-call{background:none;border:none;color:var(--text-muted);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:none;align-items:center;justify-content:center;transition:color .15s,background .15s;flex-shrink:0}
+#btn-call:hover{color:var(--online);background:rgba(63,185,80,0.12)}
+#btn-call.visible{display:flex}
+#call-incoming{position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#142214,#0d1117);border-bottom:2px solid var(--online);padding:12px 16px;display:none;align-items:center;gap:12px;animation:slideDown .3s ease}
+#call-incoming.visible{display:flex}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+#call-incoming .caller-info{flex:1}
+#call-incoming .caller-name{font-weight:700;font-size:1rem}
+#call-incoming .call-sub{font-size:.75rem;color:var(--online)}
+.call-btn{border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.call-btn.accept{background:var(--online);color:#fff}
+.call-btn.reject{background:var(--danger);color:#fff}
+#call-active{position:fixed;top:0;left:0;right:0;z-index:400;background:#0d1e0d;border-bottom:2px solid var(--online);padding:9px 16px;display:none;align-items:center;gap:10px}
+#call-active.visible{display:flex}
+#call-timer{font-weight:600;color:var(--online);flex:1;font-size:.9rem}
+#btn-hangup{background:var(--danger);border:none;color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:600}
 </style>
 </head>
 <body>
@@ -242,6 +268,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <button id="btn-menu" onclick="openSidebar()">☰</button>
         <div id="chat-room-name">Sélectionne un salon</div>
         <div id="chat-members-count"></div>
+        <button id="btn-call" title="Appel vocal" onclick="initiateCall()">📞</button>
       </div>
 
       <div id="messages"></div>
@@ -249,6 +276,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
       <div id="input-bar">
         <textarea id="msg-input" placeholder="Message..." rows="1" oninput="autoResize(this)" onkeydown="onKey(event)"></textarea>
+        <button id="btn-voice" title="Message vocal" onclick="toggleVoiceRecord()">🎤</button>
         <button id="btn-send" onclick="sendMessage()">➤</button>
       </div>
     </div>
@@ -320,6 +348,36 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     </div>
   </div>
 </div>
+
+<!-- APPEL ENTRANT -->
+<div id="call-incoming">
+  <div style="font-size:1.6rem" id="call-incoming-avatar">📞</div>
+  <div class="caller-info">
+    <div class="caller-name" id="call-incoming-name">Appel entrant</div>
+    <div class="call-sub">Appel vocal...</div>
+  </div>
+  <button class="call-btn reject" onclick="rejectCall()" title="Refuser">📵</button>
+  <button class="call-btn accept" onclick="acceptCall()" title="Accepter">📞</button>
+</div>
+
+<!-- APPEL EN COURS -->
+<div id="call-active">
+  <div style="font-size:1rem">📞</div>
+  <div id="call-timer">Connexion...</div>
+  <button id="btn-hangup" onclick="endCall()">Raccrocher</button>
+</div>
+
+<!-- MODAL CHOISIR QUI APPELER (groupe) -->
+<div class="modal-bg" id="modal-call-select" style="display:none">
+  <div class="modal">
+    <h3>Appeler...</h3>
+    <div class="user-list" id="call-user-list"></div>
+    <div class="btn-row"><button class="cancel" onclick="closeModal('modal-call-select')">Annuler</button></div>
+  </div>
+</div>
+
+<!-- AUDIO DISTANT (appels) -->
+<audio id="remote-audio" autoplay style="display:none"></audio>
 
 <!-- TOAST -->
 <div id="toast"></div>
@@ -480,10 +538,10 @@ function connectSocket(){
 
   socket.on('message', msg => {
     if(msg.room_id === currentRoomId) appendMessage(msg);
-    // Marquer non lu si pas la salle active
     if(msg.room_id !== currentRoomId) markUnread(msg.room_id);
-    // Mettre à jour l'aperçu dans la liste
     updateRoomPreview(msg);
+    // Vibration courte si message pas de moi
+    if(msg.user_id !== me.id && navigator.vibrate) navigator.vibrate(80);
   });
 
   socket.on('online', ids => {
@@ -504,6 +562,49 @@ function connectSocket(){
     clearTimeout(typingTimers[userId]);
     typingTimers[userId] = setTimeout(()=>clearTyping(userId), 3000);
   });
+
+  // ── Appels vocaux ──────────────────────────────────────────
+  socket.on('call_incoming', ({ fromUserId, fromName, fromAvatar }) => {
+    callPeerId = fromUserId;
+    document.getElementById('call-incoming-name').textContent = fromName;
+    document.getElementById('call-incoming-avatar').innerHTML = renderAvatar(fromAvatar) || '📞';
+    document.getElementById('call-incoming').classList.add('visible');
+    playRingtone();
+    if(navigator.vibrate) navigator.vibrate([400,200,400,200,400]);
+    callRingTimeout = setTimeout(()=>{ rejectCall(); }, 15000);
+  });
+
+  socket.on('call_offer', async ({ sdp }) => {
+    const desc = new RTCSessionDescription(sdp);
+    if(peerConn && peerConn.signalingState === 'stable'){
+      await peerConn.setRemoteDescription(desc);
+      await processPendingIce();
+      const answer = await peerConn.createAnswer();
+      await peerConn.setLocalDescription(answer);
+      socket.emit('call_answer', { toUserId: callPeerId, sdp: peerConn.localDescription });
+      startCallTimer();
+    } else {
+      pendingOffer = desc;
+    }
+  });
+
+  socket.on('call_answer', async ({ sdp }) => {
+    if(peerConn) {
+      await peerConn.setRemoteDescription(new RTCSessionDescription(sdp));
+      await processPendingIce();
+    }
+  });
+
+  socket.on('call_ice', async ({ candidate }) => {
+    if(peerConn && peerConn.remoteDescription){
+      try{ await peerConn.addIceCandidate(new RTCIceCandidate(candidate)); }catch(e){}
+    } else {
+      pendingIceCandidates.push(candidate);
+    }
+  });
+
+  socket.on('call_rejected', () => { endCall(true); toast('Appel refusé'); });
+  socket.on('call_ended',   () => { endCall(true); });
 }
 
 // ═══════════════════════════════════════════════════
@@ -583,6 +684,7 @@ async function openRoom(roomId){
   }
 
   document.getElementById('msg-input').focus();
+  document.getElementById('btn-call').classList.add('visible');
 }
 
 // ═══════════════════════════════════════════════════
@@ -633,7 +735,15 @@ function appendMessage(msg, noScroll){
 
   const bubble = document.createElement('div');
   bubble.className='msg-bubble';
-  bubble.textContent=msg.content;
+  if(msg.content.startsWith('data:audio/')){
+    bubble.classList.add('msg-audio');
+    const audio = document.createElement('audio');
+    audio.src = msg.content;
+    audio.controls = true;
+    bubble.appendChild(audio);
+  } else {
+    bubble.textContent = msg.content;
+  }
   group.appendChild(bubble);
 
   const time = document.createElement('div');
@@ -1148,6 +1258,204 @@ function validateEmojiBuilder(){
   document.getElementById('r-avatar-file').value='';
   closeModal('modal-emoji');
 }
+
+// ═══════════════════════════════════════════════════
+// MESSAGES VOCAUX
+// ═══════════════════════════════════════════════════
+let mediaRecorder = null;
+let audioChunks   = [];
+let isRecording   = false;
+
+async function toggleVoiceRecord(){
+  if(isRecording){ stopVoiceRecord(); return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks = [];
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+    mediaRecorder = new MediaRecorder(stream, {mimeType});
+    mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = ()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      const blob = new Blob(audioChunks, {type:mimeType});
+      const reader = new FileReader();
+      reader.onload = e => {
+        if(currentRoomId && socket) socket.emit('send_message',{roomId:currentRoomId, content:e.target.result});
+      };
+      reader.readAsDataURL(blob);
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    const btn = document.getElementById('btn-voice');
+    btn.classList.add('recording');
+    btn.title = 'Arrêter l\'enregistrement';
+    setTimeout(()=>{ if(isRecording) stopVoiceRecord(); }, 60000);
+  }catch(e){ toast('Micro non disponible'); }
+}
+
+function stopVoiceRecord(){
+  if(!mediaRecorder) return;
+  mediaRecorder.stop();
+  isRecording = false;
+  const btn = document.getElementById('btn-voice');
+  btn.classList.remove('recording');
+  btn.title = 'Message vocal';
+}
+
+// ═══════════════════════════════════════════════════
+// APPELS VOCAUX (WebRTC)
+// ═══════════════════════════════════════════════════
+let peerConn           = null;
+let localStream        = null;
+let callPeerId         = null;
+let callTimer          = null;
+let callStartTime      = null;
+let callRingTimeout    = null;
+let ringCtx            = null;
+let pendingOffer       = null;
+let pendingIceCandidates = [];
+
+async function initiateCall(){
+  if(!currentRoomId) return;
+  const r = rooms.find(x=>x.id===currentRoomId);
+  if(!r) return;
+  if(r.is_dm){
+    const members = await api('GET',`/api/rooms/${currentRoomId}/members`);
+    const other = members.find(m=>m.id!==me.id);
+    if(!other){ toast('Personne à appeler'); return; }
+    startCall(other.id, other.username);
+  } else {
+    const members = await api('GET',`/api/rooms/${currentRoomId}/members`);
+    const others = members.filter(m=>m.id!==me.id);
+    if(!others.length){ toast('Aucun membre à appeler'); return; }
+    const list = document.getElementById('call-user-list');
+    list.innerHTML='';
+    for(const u of others){
+      const item = document.createElement('div');
+      item.className='user-item';
+      const on=onlineIds.has(u.id);
+      item.innerHTML=`
+        <span style="font-size:1.3rem">${renderAvatar(u.avatar)}</span>
+        <span class="u-name">${esc(u.username)}</span>
+        <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
+        <button class="dm-btn" onclick="event.stopPropagation();closeModal('modal-call-select');startCall(${u.id},${JSON.stringify(u.username)})">Appeler</button>
+      `;
+      list.appendChild(item);
+    }
+    document.getElementById('modal-call-select').style.display='flex';
+  }
+}
+
+async function startCall(toUserId, toUsername){
+  if(peerConn) return; // déjà en appel
+  callPeerId = toUserId;
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(e){ toast('Micro non disponible'); return; }
+
+  socket.emit('call_request',{toUserId});
+  document.getElementById('call-timer').textContent = `Appel vers ${toUsername}...`;
+  document.getElementById('call-active').classList.add('visible');
+
+  callRingTimeout = setTimeout(()=>{
+    socket.emit('call_end',{toUserId:callPeerId});
+    endCall(true);
+    toast('Pas de réponse');
+  }, 15000);
+
+  setupPeerConnection(toUserId);
+  const offer = await peerConn.createOffer();
+  await peerConn.setLocalDescription(offer);
+  socket.emit('call_offer',{toUserId, sdp:peerConn.localDescription});
+}
+
+function setupPeerConnection(toUserId){
+  peerConn = new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  if(localStream) localStream.getTracks().forEach(t=>peerConn.addTrack(t,localStream));
+  peerConn.ontrack = e => {
+    const ra = document.getElementById('remote-audio');
+    ra.srcObject = e.streams[0];
+    ra.play().catch(()=>{});
+  };
+  peerConn.onicecandidate = e => {
+    if(e.candidate) socket.emit('call_ice',{toUserId, candidate:e.candidate});
+  };
+  peerConn.onconnectionstatechange = ()=>{
+    if(peerConn.connectionState==='connected'){ clearTimeout(callRingTimeout); startCallTimer(); }
+    if(['disconnected','failed','closed'].includes(peerConn.connectionState)) endCall(true);
+  };
+}
+
+async function processPendingIce(){
+  while(pendingIceCandidates.length){
+    const c = pendingIceCandidates.shift();
+    try{ await peerConn.addIceCandidate(new RTCIceCandidate(c)); }catch(e){}
+  }
+}
+
+function startCallTimer(){
+  callStartTime = Date.now();
+  callTimer = setInterval(()=>{
+    const e = Math.floor((Date.now()-callStartTime)/1000);
+    const m = Math.floor(e/60), s = e%60;
+    document.getElementById('call-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  },1000);
+}
+
+async function acceptCall(){
+  stopRingtone();
+  clearTimeout(callRingTimeout);
+  document.getElementById('call-incoming').classList.remove('visible');
+  document.getElementById('call-active').classList.add('visible');
+  document.getElementById('call-timer').textContent = 'Connexion...';
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(e){ toast('Micro non disponible'); endCall(); return; }
+  setupPeerConnection(callPeerId);
+  if(pendingOffer){
+    await peerConn.setRemoteDescription(pendingOffer);
+    pendingOffer = null;
+    await processPendingIce();
+    const answer = await peerConn.createAnswer();
+    await peerConn.setLocalDescription(answer);
+    socket.emit('call_answer',{toUserId:callPeerId, sdp:peerConn.localDescription});
+    startCallTimer();
+  }
+}
+
+function rejectCall(){
+  socket.emit('call_reject',{toUserId:callPeerId});
+  endCall(true);
+}
+
+function endCall(silent=false){
+  if(!silent && callPeerId) socket.emit('call_end',{toUserId:callPeerId});
+  clearTimeout(callRingTimeout);
+  clearInterval(callTimer);
+  callTimer=null; callRingTimeout=null; callPeerId=null;
+  pendingOffer=null; pendingIceCandidates=[];
+  if(peerConn){ peerConn.close(); peerConn=null; }
+  if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
+  document.getElementById('call-active').classList.remove('visible');
+  document.getElementById('call-incoming').classList.remove('visible');
+  stopRingtone();
+}
+
+function playRingtone(){
+  try{
+    ringCtx = new AudioContext();
+    (function ring(){
+      if(!ringCtx) return;
+      const osc=ringCtx.createOscillator(), gain=ringCtx.createGain();
+      osc.connect(gain); gain.connect(ringCtx.destination);
+      osc.frequency.value=440;
+      gain.gain.setValueAtTime(0.25,ringCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,ringCtx.currentTime+0.5);
+      osc.start(ringCtx.currentTime); osc.stop(ringCtx.currentTime+0.5);
+      setTimeout(ring,1500);
+    })();
+  }catch(e){}
+}
+function stopRingtone(){ if(ringCtx){ try{ringCtx.close();}catch(e){} ringCtx=null; } }
 
 // ═══════════════════════════════════════════════════
 // DÉMARRAGE
