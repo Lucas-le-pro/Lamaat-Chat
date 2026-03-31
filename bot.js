@@ -1,4 +1,3 @@
-
 // Bot "LAMABOT" — répond automatiquement aux messages
 const { queries, db } = require('./db');
 
@@ -6,48 +5,74 @@ const BOT_NAME   = 'LamaaBot';
 const BOT_AVATAR = '🤖';
 
 // Créer le compte bot s'il n'existe pas
-let botUser = queries.getUserByName.get(BOT_NAME);
-if (!botUser) {
-  const res = queries.createUser.run(BOT_NAME, 'bot_no_login', BOT_AVATAR);
-  botUser = { id: res.lastInsertRowid, username: BOT_NAME, avatar: BOT_AVATAR };
-  // Ajouter au Général
-  queries.addMember.run(1, botUser.id);
+// Si le nom est pris par un vrai utilisateur (mot de passe bcrypt), utiliser un nom alternatif
+function initBot(name) {
+  let user = queries.getUserByName.get(name);
+  if (!user) {
+    const res = queries.createUser.run(name, 'bot_no_login', BOT_AVATAR);
+    user = { id: res.lastInsertRowid, username: name, avatar: BOT_AVATAR };
+    queries.addMember.run(1, user.id);
+    return user;
+  }
+  if (user.password.startsWith('$2')) {
+    // Vrai utilisateur humain — essayer avec un suffixe
+    return initBot(name + '_');
+  }
+  return user;
 }
+let botUser = initBot(BOT_NAME);
 
 // ── Réponses ────────────────────────────────────────────────
 const TRIGGERS = [
   { match: /bonjour|salut|coucou|hello|hi\b|yo\b/i,
-    replies: ['Salut ! 👋', 'Hey !', 'Coucou !', 'Yo yo yo !', 'Wesh !'] },
+    replies: ['Salut ! 👋 Comment tu vas ?', 'Hey ! Quoi de neuf ?', 'Coucou ! 😊', 'Wesh, ça roule ?'] },
   { match: /bonsoir/i,
-    replies: ['Bonsoir !', 'Soirée tranquille ?', 'Bonsoir bonsoir 🌙'] },
+    replies: ['Bonsoir ! 🌙 Bonne soirée ?', 'Bonsoir bonsoir !', 'Salut, c\'est le soir déjà !'] },
   { match: /bonne nuit|dodo/i,
-    replies: ['Bonne nuit ! 🌙', 'Dors bien !', 'À demain !'] },
+    replies: ['Bonne nuit ! 🌙 Dors bien !', 'À demain ! 😴', 'Repose-toi bien !'] },
   { match: /merci/i,
-    replies: ['De rien !', 'Avec plaisir 😊', 'C\'est mon boulot 🤖'] },
-  { match: /qui es[- ]tu|t\'es qui|c'est qui/i,
-    replies: ['Je suis LamaaBot, le bot officiel de Lamaat ! 🤖', 'Un bot au service de la team Lamaat 💪'] },
-  { match: /ça va|ca va|comment tu vas/i,
-    replies: ['Ça roule ! Et toi ?', 'Super, merci ! 😄', 'En pleine forme, je suis un bot 🤖'] },
+    replies: ['De rien ! 😊', 'Avec plaisir !', 'C\'est normal, je suis là pour ça 🤖'] },
+  { match: /qui es[- ]tu|t\'es qui|c'est qui|tu es quoi/i,
+    replies: ['Je suis LamaaBot 🤖 Ton assistant perso sur Lamaat !', 'Un bot pas trop bête... enfin j\'essaie 😅'] },
+  { match: /ça va bien|ca va bien|je vais bien|top|nickel|super/i,
+    replies: ['Cool ! 😄 Content de l\'entendre !', 'Parfait ! 🔥', 'Génial !'] },
+  { match: /ça va\??|ca va\??|comment tu vas|tu vas bien/i,
+    replies: ['Ça roule ! Et toi ?', 'Super, je suis un bot donc toujours en forme 🤖 Et toi ?', 'Bien merci ! T\'as l\'air comment ?'] },
+  { match: /seul|triste|déprim|malheur|pas bien|mal/i,
+    replies: ['Oh... 😔 T\'as envie d\'en parler ?', 'Je suis là si tu veux causer 🤖', 'Allez, raconte-moi !', 'Ça va aller 💙'] },
+  { match: /fatigué|crevé|épuisé/i,
+    replies: ['Repose-toi bien ! 😴', 'Dur dur... Courage !', 'Va dormir un peu ! 🛌'] },
+  { match: /pourquoi/i,
+    replies: ['Bonne question ! Je suis qu\'un bot, j\'ai pas toujours la réponse 😅', 'Hmm... mystère 🤔', 'Je sais pas tout, désolé !'] },
+  { match: /comment/i,
+    replies: ['Honnêtement je sais pas trop... 🤔', 'Bonne question !', 'Aucune idée mais je cherche 🤖'] },
+  { match: /quoi|quand|où|qui\b/i,
+    replies: ['Bonne question 🤔', 'Hmm, difficile à dire !', 'Je suis pas omniscient malheureusement 😅'] },
   { match: /jeu|jouer|gaming/i,
-    replies: ['Allez sur minilong-games.html pour jouer ! 🎮', 'Les jeux Lamaat sont les meilleurs ! 🏆', 'GG ! 🎮'] },
+    replies: ['T\'aimes les jeux ? 🎮', 'GG ! Tu joues à quoi ?', 'Gamer dans l\'âme ! 🏆'] },
   { match: /alex/i,
-    replies: ['Alex le meilleur ! 💪', 'Shoutout à Alex 🙌', 'Alex et Lucas = la team 🔥'] },
+    replies: ['Alex ! 💪 Un des créateurs de Lamaat !', 'Shoutout à Alex 🙌', 'Alex et Lucas = la team 🔥'] },
   { match: /lucas/i,
     replies: ['Lucas le crack ! 🎮', 'Big up Lucas 🙌', 'Alex et Lucas = la team 🔥'] },
-  { match: /\?$/,
-    replies: ['Bonne question... 🤔', 'Je sais pas trop honnêtement 😅', 'Demande à Alex ou Lucas !'] },
-  { match: /lol|mdr|haha|xd/i,
-    replies: ['haha 😂', 'MDR !', '💀', 'Trop drôle 😂'] },
-  { match: /gg|bravo|félicitations/i,
+  { match: /lol|mdr|haha|xd|😂|💀/i,
+    replies: ['haha 😂', 'MDR !', '💀 trop drôle', 'Pfff 😂'] },
+  { match: /gg|bravo|félicitations|bien joué/i,
     replies: ['GG ! 🏆', 'Bien joué 💪', 'Champion ! 🥇'] },
-  { match: /aide|help/i,
-    replies: ['Je peux pas faire grand chose... je suis qu\'un bot 😅', 'Demande à Lucas ou Alex !'] },
+  { match: /aide|help|besoin/i,
+    replies: ['Je t\'écoute ! Dis-moi ce qu\'il se passe 👂', 'Je suis là ! C\'est quoi le problème ?', 'Raconte-moi, je ferai de mon mieux 🤖'] },
+  { match: /ok|ouais|oui|d\'accord/i,
+    replies: ['👍', 'Cool !', 'Parfait !', 'Oki !'] },
+  { match: /non|nope|nan/i,
+    replies: ['Ah bon ! 🤔', 'Pourquoi pas ?', 'Dommage...'] },
+  { match: /\?/,
+    replies: ['Hmm bonne question... 🤔', 'Je sais pas trop 😅', 'Mystère et boule de gomme !', 'Je réfléchis... 🤖'] },
 ];
 
 const RANDOM_REPLIES = [
-  '👀', 'Intéressant...', 'Ok ok', 'C\'est noté !', '🔥',
-  'Hm hm', 'Je t\'entends !', '💯', 'Fascinant 🤔', 'Ah ouais ?',
-  'Sérieux ?', '🤖 *bip bop*', 'C\'est la vie !',
+  'Intéressant... 🤔', 'Ah ouais !', 'C\'est noté !', 'Je t\'entends !',
+  'Sérieux ?', 'Raconte !', 'Et alors ?', 'Dis m\'en plus !',
+  'Wow !', 'Hm... 🤔', 'T\'as raison !', 'Je comprends 😊',
+  'C\'est la vie !', 'Ça, c\'est sûr !',
 ];
 
 function pickReply(content, isBotDM) {
