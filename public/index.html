@@ -875,7 +875,7 @@ async function openNewDM(){
       <span style="font-size:1.3rem">${renderAvatar(u.avatar)}</span>
       <span class="u-name">${esc(u.username)}</span>
       <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
-      <button class="dm-btn" onclick="event.stopPropagation();startDM(${JSON.stringify(u)})">Écrire</button>
+      <button class="dm-btn" onclick="event.stopPropagation();startDM('${encodeURIComponent(JSON.stringify(u))}')">Écrire</button>
     `;
     list.appendChild(item);
   }
@@ -895,7 +895,7 @@ function filterDMUsers(q){
 }
 
 async function startDM(user){
-  if(typeof user === 'string') user = JSON.parse(user);
+  if(typeof user === 'string') user = JSON.parse(decodeURIComponent(user));
   const res=await api('POST','/api/dm',{userId:user.id});
   if(res.error){toast(res.error);return;}
   closeModal('modal-dm');
