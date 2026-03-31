@@ -1,3 +1,4 @@
+
 // Bot "LAMABOT" — répond automatiquement aux messages
 const { queries, db } = require('./db');
 
@@ -49,14 +50,18 @@ const RANDOM_REPLIES = [
   'Sérieux ?', '🤖 *bip bop*', 'C\'est la vie !',
 ];
 
-function pickReply(content) {
+function pickReply(content, isBotDM) {
   for (const trigger of TRIGGERS) {
     if (trigger.match.test(content)) {
       const arr = trigger.replies;
       return arr[Math.floor(Math.random() * arr.length)];
     }
   }
-  // Réponse aléatoire avec proba 40%
+  // Dans un DM privé, toujours répondre
+  if (isBotDM) {
+    return RANDOM_REPLIES[Math.floor(Math.random() * RANDOM_REPLIES.length)];
+  }
+  // Réponse aléatoire avec proba 40% dans les groupes
   if (Math.random() < 0.4) {
     return RANDOM_REPLIES[Math.floor(Math.random() * RANDOM_REPLIES.length)];
   }
@@ -65,13 +70,11 @@ function pickReply(content) {
 
 // ── Interface pour le serveur ────────────────────────────────
 // Appelé depuis server.js à chaque message reçu
-function handleMessage(io, roomId, userId, content) {
-  // Le bot ne répond pas à lui-même
+function handleMessage(io, roomId, userId, content, isBotDM = false) {
   if (userId === botUser.id) return;
-  // Le bot doit être membre du salon
   if (!queries.isMember.get(roomId, botUser.id)) return;
 
-  const reply = pickReply(content);
+  const reply = pickReply(content, isBotDM);
   if (!reply) return;
 
   // Délai naturel (1 à 3 secondes)
