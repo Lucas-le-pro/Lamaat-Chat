@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -20,7 +21,8 @@
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px}
 
 /* ── AUTH ───────────────────────────────────────────────── */
-#auth{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+#auth{position:fixed;inset:0;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;z-index:100;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#auth-box{margin:auto 0}
 #auth-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:380px}
 #auth-box h1{font-size:1.5rem;margin-bottom:4px;color:var(--primary)}
 #auth-box p{color:var(--text-muted);font-size:.85rem;margin-bottom:20px}
@@ -36,6 +38,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .auth-switch{text-align:center;margin-top:12px;font-size:.85rem;color:var(--text-muted)}
 .auth-switch a{color:var(--primary);cursor:pointer;text-decoration:none}
 .err{color:var(--danger);font-size:.82rem;margin-top:6px;min-height:18px}
+.av-img{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;flex-shrink:0}
+.av-opt img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.av-upload-label{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;background:#21262d;border:1px dashed var(--border);color:var(--text-muted);padding:6px 10px;border-radius:6px;cursor:pointer;transition:border-color .15s,color .15s}
+.av-upload-label:hover{border-color:var(--primary);color:var(--primary)}
+#avatar-preview{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);display:none}
+.emoji-color-btn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:border-color .15s;flex-shrink:0}
+.emoji-color-btn.selected{border-color:var(--primary);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--primary)}
+.emoji-opt-btn{font-size:1.15rem;cursor:pointer;padding:3px 6px;border-radius:6px;border:2px solid transparent;background:#0d1117;transition:border-color .15s,background .15s}
+.emoji-opt-btn.selected{border-color:var(--primary);background:#1a1f25}
 
 /* ── LAYOUT ─────────────────────────────────────────────── */
 #app{display:none;height:100%;flex-direction:column}
@@ -134,8 +145,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #empty-chat .big{font-size:3rem}
 
 /* ── MODALS ──────────────────────────────────────────────── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:100%;max-width:360px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;width:100%;max-width:360px;margin:auto 0}
 .modal h3{margin-bottom:14px;color:var(--primary)}
 .modal input{width:100%;background:#0d1117;border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:.95rem;outline:none;margin-bottom:10px}
 .modal input:focus{border-color:var(--primary)}
@@ -164,6 +175,31 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* Toast */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#21262d;border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:20px;font-size:.85rem;opacity:0;transition:opacity .3s;z-index:300;pointer-events:none}
 #toast.show{opacity:1}
+
+/* ── VOICE MESSAGE ───────────────────────────────────────── */
+.msg-audio audio{max-width:100%;width:210px;height:36px;outline:none;border-radius:20px;display:block}
+#btn-voice{background:none;border:none;color:var(--text-muted);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1.2rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s}
+#btn-voice:hover{color:var(--primary)}
+#btn-voice.recording{color:var(--danger);background:rgba(248,81,73,0.12);animation:pulse .9s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+
+/* ── CALL ────────────────────────────────────────────────── */
+#btn-call{background:none;border:none;color:var(--text-muted);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:none;align-items:center;justify-content:center;transition:color .15s,background .15s;flex-shrink:0}
+#btn-call:hover{color:var(--online);background:rgba(63,185,80,0.12)}
+#btn-call.visible{display:flex}
+#call-incoming{position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#142214,#0d1117);border-bottom:2px solid var(--online);padding:12px 16px;display:none;align-items:center;gap:12px;animation:slideDown .3s ease}
+#call-incoming.visible{display:flex}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+#call-incoming .caller-info{flex:1}
+#call-incoming .caller-name{font-weight:700;font-size:1rem}
+#call-incoming .call-sub{font-size:.75rem;color:var(--online)}
+.call-btn{border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.call-btn.accept{background:var(--online);color:#fff}
+.call-btn.reject{background:var(--danger);color:#fff}
+#call-active{position:fixed;top:0;left:0;right:0;z-index:400;background:#0d1e0d;border-bottom:2px solid var(--online);padding:9px 16px;display:none;align-items:center;gap:10px}
+#call-active.visible{display:flex}
+#call-timer{font-weight:600;color:var(--online);flex:1;font-size:.9rem}
+#btn-hangup{background:var(--danger);border:none;color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:600}
 </style>
 </head>
 <body>
@@ -187,6 +223,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       <div class="field"><label>Mot de passe</label><input id="r-pass" type="password" autocomplete="new-password" placeholder="Min 4 caractères"></div>
       <div class="field"><label>Ton avatar</label>
         <div class="avatar-row" id="avatar-row"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          <label class="av-upload-label">📷 Photo<input id="r-avatar-file" type="file" accept="image/*" style="display:none" onchange="onAvatarFile(this)"></label>
+          <button type="button" class="av-upload-label" onclick="openEmojiBuilder()" style="border-style:dashed">🎨 Créer emoji</button>
+          <img id="avatar-preview" src="" alt="preview">
+        </div>
       </div>
       <div class="err" id="r-err"></div>
       <button class="btn" onclick="doRegister()">Créer le compte</button>
@@ -228,6 +269,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <button id="btn-menu" onclick="openSidebar()">☰</button>
         <div id="chat-room-name">Sélectionne un salon</div>
         <div id="chat-members-count"></div>
+        <button id="btn-call" title="Appel vocal" onclick="initiateCall()">📞</button>
       </div>
 
       <div id="messages"></div>
@@ -235,6 +277,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
       <div id="input-bar">
         <textarea id="msg-input" placeholder="Message..." rows="1" oninput="autoResize(this)" onkeydown="onKey(event)"></textarea>
+        <button id="btn-voice" title="Message vocal" onclick="toggleVoiceRecord()">🎤</button>
         <button id="btn-send" onclick="sendMessage()">➤</button>
       </div>
     </div>
@@ -269,6 +312,74 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
+<!-- MODAL EMOJI BUILDER -->
+<div class="modal-bg" id="modal-emoji" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <h3>🎨 Créer mon emoji</h3>
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+      <canvas id="emoji-canvas" width="128" height="128" style="border-radius:50%;border:3px solid var(--border);flex-shrink:0"></canvas>
+      <div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px">Couleur</div>
+          <div id="emoji-colors" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+        <div>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px">Expression</div>
+          <div id="emoji-expressions" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+        </div>
+        <div>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px">Accessoire</div>
+          <div id="emoji-accessories" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+        </div>
+        <div>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px">Texte (1–3 lettres)</div>
+          <input id="emoji-text" type="text" maxlength="6" placeholder="ex: AB ou LOL"
+            oninput="emojiBuilder.text=this.value;drawEmojiBuilder()"
+            style="width:100%;background:#0d1117;border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:.9rem;outline:none">
+        </div>
+        <div>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:5px">Position du texte</div>
+          <div id="emoji-textpos" style="display:flex;gap:4px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="cancel" onclick="closeModal('modal-emoji')">Annuler</button>
+      <button class="ok" onclick="validateEmojiBuilder()">Utiliser cet emoji ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPEL ENTRANT -->
+<div id="call-incoming">
+  <div style="font-size:1.6rem" id="call-incoming-avatar">📞</div>
+  <div class="caller-info">
+    <div class="caller-name" id="call-incoming-name">Appel entrant</div>
+    <div class="call-sub">Appel vocal...</div>
+  </div>
+  <button class="call-btn reject" onclick="rejectCall()" title="Refuser">📵</button>
+  <button class="call-btn accept" onclick="acceptCall()" title="Accepter">📞</button>
+</div>
+
+<!-- APPEL EN COURS -->
+<div id="call-active">
+  <div style="font-size:1rem">📞</div>
+  <div id="call-timer">Connexion...</div>
+  <button id="btn-hangup" onclick="endCall()">Raccrocher</button>
+</div>
+
+<!-- MODAL CHOISIR QUI APPELER (groupe) -->
+<div class="modal-bg" id="modal-call-select" style="display:none">
+  <div class="modal">
+    <h3>Appeler...</h3>
+    <div class="user-list" id="call-user-list"></div>
+    <div class="btn-row"><button class="cancel" onclick="closeModal('modal-call-select')">Annuler</button></div>
+  </div>
+</div>
+
+<!-- AUDIO DISTANT (appels) -->
+<audio id="remote-audio" autoplay style="display:none"></audio>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -285,7 +396,12 @@ let onlineIds = new Set();
 let typingTimers = {};
 let selectedAvatar = '😀';
 
-const AVATARS = ['😀','😎','🤩','🥷','🧙','🦊','🐼','🐸','👾','🤖','🦁','🐯'];
+const AVATARS = [
+  '😀','😄','😂','🥹','😎','🤩','🥸','🥷','🧙','🧝','🧛','🧟',
+  '🦊','🐼','🐸','👾','🤖','🦁','🐯','🐻','🐨','🐺','🦝','🐙','🐱','🐶',
+  '🦋','🐉','🦄','🐬','🦅','🦜','🐧','🦔','🐊','🦀','🐙','🦑',
+  '🌸','🌟','💎','🔥','⚡','🍀','🎮','🎸','🚀','🌈','🎯','🏆',
+];
 
 // ═══════════════════════════════════════════════════
 // AUTH
@@ -297,6 +413,50 @@ function showRegister(){
   buildAvatarRow();
 }
 
+function renderAvatar(av, extraCls=''){
+  if(av && (av.startsWith('data:') || av.startsWith('http'))){
+    const d = document.createElement('div'); d.textContent = av;
+    return `<img src="${d.innerHTML}" class="av-img ${extraCls}" alt="avatar">`;
+  }
+  return av || '👤';
+}
+
+function setCustomAvatar(dataUrl, onClickCb){
+  selectedAvatar = dataUrl;
+  document.querySelectorAll('.av-opt').forEach(s => s.classList.remove('selected'));
+  document.getElementById('avatar-preview').style.display = 'none';
+  const row = document.getElementById('avatar-row');
+  let slot = row.querySelector('.av-opt-custom');
+  if(!slot){
+    slot = document.createElement('span');
+    slot.className = 'av-opt av-opt-custom';
+    row.appendChild(slot);
+  }
+  slot.innerHTML = `<img src="${dataUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:block">`;
+  slot.classList.add('selected');
+  slot.onclick = onClickCb;
+}
+
+function onAvatarFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      const s = Math.min(img.width, img.height);
+      const ox = (img.width - s) / 2, oy = (img.height - s) / 2;
+      ctx.drawImage(img, ox, oy, s, s, 0, 0, 64, 64);
+      setCustomAvatar(canvas.toDataURL('image/jpeg', 0.75), () => document.getElementById('r-avatar-file').click());
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function buildAvatarRow(){
   const row = document.getElementById('avatar-row');
   row.innerHTML = '';
@@ -304,7 +464,14 @@ function buildAvatarRow(){
     const span = document.createElement('span');
     span.className = 'av-opt' + (av===selectedAvatar?' selected':'');
     span.textContent = av;
-    span.onclick = ()=>{ selectedAvatar=av; document.querySelectorAll('.av-opt').forEach(s=>s.classList.remove('selected')); span.classList.add('selected'); };
+    span.onclick = ()=>{
+      selectedAvatar = av;
+      document.querySelectorAll('.av-opt').forEach(s=>s.classList.remove('selected'));
+      span.classList.add('selected');
+      const prev = document.getElementById('avatar-preview');
+      prev.src=''; prev.style.display='none';
+      document.getElementById('r-avatar-file').value='';
+    };
     row.appendChild(span);
   }
 }
@@ -343,7 +510,7 @@ async function doLogout(){
 async function enterApp(){
   document.getElementById('auth').style.display='none';
   document.getElementById('app').classList.add('visible');
-  document.getElementById('my-avatar').textContent = me.avatar;
+  document.getElementById('my-avatar').innerHTML = renderAvatar(me.avatar);
   document.getElementById('my-name').textContent   = me.username;
   await loadRooms();
   connectSocket();
@@ -372,10 +539,10 @@ function connectSocket(){
 
   socket.on('message', msg => {
     if(msg.room_id === currentRoomId) appendMessage(msg);
-    // Marquer non lu si pas la salle active
     if(msg.room_id !== currentRoomId) markUnread(msg.room_id);
-    // Mettre à jour l'aperçu dans la liste
     updateRoomPreview(msg);
+    // Vibration courte si message pas de moi
+    if(msg.user_id !== me.id && navigator.vibrate) navigator.vibrate(80);
   });
 
   socket.on('online', ids => {
@@ -396,6 +563,49 @@ function connectSocket(){
     clearTimeout(typingTimers[userId]);
     typingTimers[userId] = setTimeout(()=>clearTyping(userId), 3000);
   });
+
+  // ── Appels vocaux ──────────────────────────────────────────
+  socket.on('call_incoming', ({ fromUserId, fromName, fromAvatar }) => {
+    callPeerId = fromUserId;
+    document.getElementById('call-incoming-name').textContent = fromName;
+    document.getElementById('call-incoming-avatar').innerHTML = renderAvatar(fromAvatar) || '📞';
+    document.getElementById('call-incoming').classList.add('visible');
+    playRingtone();
+    if(navigator.vibrate) navigator.vibrate([400,200,400,200,400]);
+    callRingTimeout = setTimeout(()=>{ rejectCall(); }, 15000);
+  });
+
+  socket.on('call_offer', async ({ sdp }) => {
+    const desc = new RTCSessionDescription(sdp);
+    if(peerConn && peerConn.signalingState === 'stable'){
+      await peerConn.setRemoteDescription(desc);
+      await processPendingIce();
+      const answer = await peerConn.createAnswer();
+      await peerConn.setLocalDescription(answer);
+      socket.emit('call_answer', { toUserId: callPeerId, sdp: peerConn.localDescription });
+      startCallTimer();
+    } else {
+      pendingOffer = desc;
+    }
+  });
+
+  socket.on('call_answer', async ({ sdp }) => {
+    if(peerConn) {
+      await peerConn.setRemoteDescription(new RTCSessionDescription(sdp));
+      await processPendingIce();
+    }
+  });
+
+  socket.on('call_ice', async ({ candidate }) => {
+    if(peerConn && peerConn.remoteDescription){
+      try{ await peerConn.addIceCandidate(new RTCIceCandidate(candidate)); }catch(e){}
+    } else {
+      pendingIceCandidates.push(candidate);
+    }
+  });
+
+  socket.on('call_rejected', () => { endCall(true); toast('Appel refusé'); });
+  socket.on('call_ended',   () => { endCall(true); });
 }
 
 // ═══════════════════════════════════════════════════
@@ -413,7 +623,7 @@ function renderRoomList(){
     const displayName = getRoomDisplayName(r);
 
     div.innerHTML = `
-      <div class="room-icon">${icon}</div>
+      <div class="room-icon">${renderAvatar(icon)}</div>
       <div class="room-info">
         <div class="room-name">${esc(displayName)}</div>
         <div class="room-last" id="room-last-${r.id}"></div>
@@ -475,6 +685,7 @@ async function openRoom(roomId){
   }
 
   document.getElementById('msg-input').focus();
+  document.getElementById('btn-call').classList.add('visible');
 }
 
 // ═══════════════════════════════════════════════════
@@ -516,7 +727,7 @@ function appendMessage(msg, noScroll){
     if(!isMe && !sameUser){
       const sender = document.createElement('div');
       sender.className='msg-sender';
-      sender.textContent=`${msg.avatar} ${msg.username}`;
+      sender.innerHTML=renderAvatar(msg.avatar)+' '+esc(msg.username);
       group.appendChild(sender);
     }
     box.appendChild(group);
@@ -525,7 +736,15 @@ function appendMessage(msg, noScroll){
 
   const bubble = document.createElement('div');
   bubble.className='msg-bubble';
-  bubble.textContent=msg.content;
+  if(msg.content.startsWith('data:audio/')){
+    bubble.classList.add('msg-audio');
+    const audio = document.createElement('audio');
+    audio.src = msg.content;
+    audio.controls = true;
+    bubble.appendChild(audio);
+  } else {
+    bubble.textContent = msg.content;
+  }
   group.appendChild(bubble);
 
   const time = document.createElement('div');
@@ -609,7 +828,7 @@ async function openNewGroup(){
     item.dataset.uid=u.id;
     const on=onlineIds.has(u.id);
     item.innerHTML=`
-      <span style="font-size:1.3rem">${u.avatar}</span>
+      <span style="font-size:1.3rem">${renderAvatar(u.avatar)}</span>
       <span class="u-name">${esc(u.username)}</span>
       <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
       <div class="u-check">✓</div>
@@ -654,10 +873,10 @@ async function openNewDM(){
     item.className='user-item';
     const on=onlineIds.has(u.id);
     item.innerHTML=`
-      <span style="font-size:1.3rem">${u.avatar}</span>
+      <span style="font-size:1.3rem">${renderAvatar(u.avatar)}</span>
       <span class="u-name">${esc(u.username)}</span>
       <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
-      <button class="dm-btn" onclick="event.stopPropagation();startDM(${JSON.stringify(u)})">Écrire</button>
+      <button class="dm-btn" onclick="event.stopPropagation();startDM('${encodeURIComponent(JSON.stringify(u))}')">Écrire</button>
     `;
     list.appendChild(item);
   }
@@ -677,7 +896,7 @@ function filterDMUsers(q){
 }
 
 async function startDM(user){
-  if(typeof user === 'string') user = JSON.parse(user);
+  if(typeof user === 'string') user = JSON.parse(decodeURIComponent(user));
   const res=await api('POST','/api/dm',{userId:user.id});
   if(res.error){toast(res.error);return;}
   closeModal('modal-dm');
@@ -724,6 +943,542 @@ function esc(s){ const d=document.createElement('div'); d.textContent=s; return 
 
 let toastTimer;
 function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2500); }
+
+// ═══════════════════════════════════════════════════
+// EMOJI BUILDER
+// ═══════════════════════════════════════════════════
+const emojiBuilder = { color:'#FFD93D', expression:'happy', accessory:null, text:'', textPos:'center' };
+
+const EMOJI_COLORS = [
+  {v:'#FFD93D',n:'Jaune'},{v:'#FF6B6B',n:'Rouge'},{v:'#4ECDC4',n:'Turquoise'},
+  {v:'#45B7D1',n:'Bleu'},{v:'#96CEB4',n:'Vert'},{v:'#C084FC',n:'Violet'},
+  {v:'#FF8C42',n:'Orange'},{v:'#FFB6C1',n:'Rose'},{v:'#A0785A',n:'Marron'},
+  {v:'#F0E68C',n:'Crème'},{v:'#E2E8F0',n:'Blanc'},{v:'#1E293B',n:'Noir'},
+];
+const EMOJI_EXPRESSIONS = [
+  {v:'happy',l:'😊'},{v:'big-smile',l:'😁'},{v:'sad',l:'😢'},
+  {v:'angry',l:'😠'},{v:'surprised',l:'😲'},{v:'sick',l:'🤢'},
+  {v:'wink',l:'😉'},{v:'neutral',l:'😐'},{v:'sleeping',l:'😴'},
+  {v:'smirk',l:'😏'},{v:'crazy',l:'🤪'},
+];
+const EMOJI_ACCESSORIES = [
+  {v:null,l:'❌'},{v:'glasses',l:'🔵'},{v:'sunglasses',l:'🕶'},
+  {v:'hat',l:'🎩'},{v:'crown',l:'👑'},{v:'star',l:'⭐'},
+  {v:'mustache',l:'👨'},{v:'cat-ears',l:'🐱'},{v:'bunny-ears',l:'🐰'},
+];
+
+function openEmojiBuilder(){
+  emojiBuilder.text='';
+  emojiBuilder.textPos='center';
+  document.getElementById('emoji-text').value='';
+  buildEmojiBuilderUI();
+  drawEmojiBuilder();
+  document.getElementById('modal-emoji').style.display='flex';
+}
+
+function buildEmojiBuilderUI(){
+  const colDiv=document.getElementById('emoji-colors');
+  colDiv.innerHTML='';
+  for(const c of EMOJI_COLORS){
+    const b=document.createElement('div');
+    b.className='emoji-color-btn'+(emojiBuilder.color===c.v?' selected':'');
+    b.style.background=c.v; b.title=c.n;
+    b.onclick=()=>{emojiBuilder.color=c.v;buildEmojiBuilderUI();drawEmojiBuilder();};
+    colDiv.appendChild(b);
+  }
+  const expDiv=document.getElementById('emoji-expressions');
+  expDiv.innerHTML='';
+  for(const e of EMOJI_EXPRESSIONS){
+    const b=document.createElement('span');
+    b.className='emoji-opt-btn'+(emojiBuilder.expression===e.v?' selected':'');
+    b.textContent=e.l; b.title=e.v;
+    b.onclick=()=>{emojiBuilder.expression=e.v;buildEmojiBuilderUI();drawEmojiBuilder();};
+    expDiv.appendChild(b);
+  }
+  const accDiv=document.getElementById('emoji-accessories');
+  accDiv.innerHTML='';
+  for(const a of EMOJI_ACCESSORIES){
+    const b=document.createElement('span');
+    b.className='emoji-opt-btn'+(emojiBuilder.accessory===a.v?' selected':'');
+    b.textContent=a.l; b.title=a.v||'Aucun';
+    b.onclick=()=>{emojiBuilder.accessory=a.v;buildEmojiBuilderUI();drawEmojiBuilder();};
+    accDiv.appendChild(b);
+  }
+  const posDiv=document.getElementById('emoji-textpos');
+  posDiv.innerHTML='';
+  const POSITIONS=[{v:'top',l:'⬆ Haut'},{v:'center',l:'⬤ Centre'},{v:'bottom',l:'⬇ Bas'}];
+  for(const p of POSITIONS){
+    const b=document.createElement('span');
+    b.className='emoji-opt-btn'+(emojiBuilder.textPos===p.v?' selected':'');
+    b.textContent=p.l; b.title=p.v;
+    b.onclick=()=>{emojiBuilder.textPos=p.v;buildEmojiBuilderUI();drawEmojiBuilder();};
+    posDiv.appendChild(b);
+  }
+}
+
+function drawEmojiBuilder(){
+  const canvas=document.getElementById('emoji-canvas');
+  const ctx=canvas.getContext('2d');
+  const pos=emojiBuilder.textPos||'center';
+  const acc=emojiBuilder.accessory;
+  const hasText=!!emojiBuilder.text;
+  const isBunny=acc==='bunny-ears';
+  const isCat=acc==='cat-ears';
+
+  // Espace supplémentaire : oreilles de lapin au-dessus, texte haut/bas
+  const extraTop=isBunny?44:(pos==='top'&&hasText)?36:0;
+  const extraBot=(pos==='bottom'&&hasText)?36:0;
+  const W=128, H=128+extraTop+extraBot;
+  if(canvas.width!==W||canvas.height!==H){ canvas.width=W; canvas.height=H; }
+  canvas.style.borderRadius=H>128?'10px':'50%';
+  ctx.clearRect(0,0,W,H);
+
+  // Centre du cercle en coordonnées canvas
+  const canvasCY=64+extraTop;
+
+  // ── Oreilles de lapin AVANT le cercle (pour dépasser au-dessus) ──
+  if(isBunny){
+    const ey=canvasCY-56; // sommet du cercle
+    ctx.fillStyle='#f0e0e8';
+    ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(36,ey,11,34,-.2,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(92,ey,11,34,.2,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='rgba(255,150,180,0.7)';
+    ctx.beginPath(); ctx.ellipse(36,ey,6,24,-.2,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(92,ey,6,24,.2,0,Math.PI*2); ctx.fill();
+  } else if(isCat){
+    // Oreilles de chat AVANT le cercle (les pointes dépassent)
+    const et=extraTop;
+    ctx.fillStyle=emojiBuilder.color;
+    ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(18,46+et); ctx.lineTo(28,10+et); ctx.lineTo(48,38+et); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(110,46+et); ctx.lineTo(100,10+et); ctx.lineTo(80,38+et); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='rgba(255,150,180,0.6)';
+    ctx.beginPath(); ctx.moveTo(22,42+et); ctx.lineTo(30,18+et); ctx.lineTo(44,36+et); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(106,42+et); ctx.lineTo(98,18+et); ctx.lineTo(84,36+et); ctx.closePath(); ctx.fill();
+  }
+
+  // ── Texte en haut (avant translate) ──
+  if(pos==='top'&&hasText){
+    const t=emojiBuilder.text;
+    const fs=t.length<=2?22:t.length<=4?17:13;
+    ctx.font=`bold ${fs}px sans-serif`;
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(t,64,extraTop>0?extraTop/2:18);
+  }
+
+  // Décalage pour que le code du visage (coordonnées en 0–128) se positionne correctement
+  ctx.save();
+  ctx.translate(0,extraTop);
+
+  const cx=64,cy=64,r=56;
+
+  // Cercle de base
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.clip();
+  ctx.fillStyle=emojiBuilder.color; ctx.fillRect(0,0,128,128);
+  if(emojiBuilder.expression==='sick'){
+    ctx.fillStyle='rgba(80,200,60,0.2)'; ctx.fillRect(0,0,128,128);
+  }
+  ctx.restore();
+
+  // Bordure
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=3; ctx.stroke();
+
+  const exp=emojiBuilder.expression;
+  ctx.fillStyle='#1a1a1a';
+  ctx.strokeStyle='#1a1a1a';
+  ctx.lineCap='round';
+
+  // ── Sourcils ──
+  if(exp==='angry'){
+    ctx.lineWidth=3.5;
+    ctx.beginPath(); ctx.moveTo(34,46); ctx.lineTo(50,51); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(94,46); ctx.lineTo(78,51); ctx.stroke();
+  } else if(exp==='sad'){
+    ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(34,49); ctx.lineTo(50,45); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(94,49); ctx.lineTo(78,45); ctx.stroke();
+  }
+
+  // ── Yeux ──
+  const eyeY = exp==='surprised'?50:53;
+  if(exp==='wink'||exp==='smirk'){
+    ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(34,eyeY); ctx.quadraticCurveTo(41,eyeY-5,48,eyeY); ctx.stroke();
+    if(exp!=='smirk'){ ctx.beginPath(); ctx.arc(87,eyeY,5,0,Math.PI*2); ctx.fill(); }
+    else { ctx.beginPath(); ctx.arc(87,eyeY,5,0,Math.PI*2); ctx.fill(); }
+  } else if(exp==='big-smile'){
+    ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(34,eyeY+2); ctx.quadraticCurveTo(41,eyeY-6,48,eyeY+2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(80,eyeY+2); ctx.quadraticCurveTo(87,eyeY-6,94,eyeY+2); ctx.stroke();
+  } else if(exp==='sleeping'){
+    ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(34,eyeY+2); ctx.quadraticCurveTo(41,eyeY-4,48,eyeY+2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(80,eyeY+2); ctx.quadraticCurveTo(87,eyeY-4,94,eyeY+2); ctx.stroke();
+  } else if(exp==='crazy'){
+    ctx.beginPath(); ctx.arc(41,eyeY,7,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=emojiBuilder.color; ctx.beginPath(); ctx.arc(41,eyeY,3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1a1a1a';
+    ctx.beginPath(); ctx.arc(87,eyeY,5,0,Math.PI*2); ctx.fill();
+    ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(80,eyeY+3); ctx.quadraticCurveTo(87,eyeY-5,94,eyeY+3); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(41,eyeY,exp==='surprised'?7:5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(87,eyeY,exp==='surprised'?7:5,0,Math.PI*2); ctx.fill();
+  }
+
+  // ── Bouche ──
+  ctx.fillStyle='#1a1a1a'; ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=3.5;
+  if(exp==='happy'||exp==='wink'){
+    ctx.beginPath(); ctx.arc(cx,67,19,0.18*Math.PI,0.82*Math.PI); ctx.stroke();
+  } else if(exp==='big-smile'){
+    ctx.beginPath(); ctx.arc(cx,67,20,0.1*Math.PI,0.9*Math.PI); ctx.stroke();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,67,20,0.1*Math.PI,0.9*Math.PI); ctx.lineTo(cx-20,67); ctx.closePath(); ctx.clip();
+    ctx.fillStyle='#fff'; ctx.fillRect(cx-20,58,40,10);
+    ctx.fillStyle='rgba(0,0,0,0.1)'; ctx.fillRect(cx,58,1.5,10);
+    ctx.restore();
+  } else if(exp==='sad'){
+    ctx.beginPath(); ctx.arc(cx,92,19,1.18*Math.PI,1.82*Math.PI); ctx.stroke();
+  } else if(exp==='angry'){
+    ctx.beginPath(); ctx.arc(cx,92,16,1.25*Math.PI,1.75*Math.PI); ctx.stroke();
+  } else if(exp==='surprised'){
+    ctx.beginPath(); ctx.ellipse(cx,84,10,13,0,0,Math.PI*2); ctx.stroke();
+  } else if(exp==='sick'){
+    ctx.beginPath();
+    ctx.moveTo(46,80); ctx.bezierCurveTo(52,74,58,86,64,80);
+    ctx.bezierCurveTo(70,74,76,86,82,80); ctx.stroke();
+  } else if(exp==='sleeping'){
+    ctx.beginPath(); ctx.moveTo(50,80); ctx.lineTo(78,80); ctx.stroke();
+    ctx.font='bold 14px sans-serif'; ctx.fillStyle='rgba(0,0,0,0.4)';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('zzz',92,38);
+  } else if(exp==='smirk'){
+    ctx.beginPath(); ctx.moveTo(50,79); ctx.quadraticCurveTo(67,90,82,76); ctx.stroke();
+  } else if(exp==='crazy'){
+    ctx.beginPath(); ctx.arc(cx,68,18,0.1*Math.PI,0.9*Math.PI); ctx.stroke();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,68,18,0.1*Math.PI,0.9*Math.PI); ctx.lineTo(cx-18,68); ctx.closePath(); ctx.clip();
+    ctx.fillStyle='#fff'; ctx.fillRect(cx-18,58,36,10);
+    ctx.fillStyle='rgba(0,0,0,0.1)';
+    for(let i=0;i<3;i++) ctx.fillRect(cx-12+i*12,58,1.5,10);
+    ctx.restore();
+  } else {
+    ctx.beginPath(); ctx.moveTo(46,79); ctx.lineTo(82,79); ctx.stroke();
+  }
+
+  // ── Joues roses ──
+  if(['happy','big-smile','wink','crazy'].includes(exp)){
+    ctx.fillStyle='rgba(255,150,150,0.35)';
+    ctx.beginPath(); ctx.ellipse(28,74,12,8,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(100,74,12,8,0,0,Math.PI*2); ctx.fill();
+  }
+
+  // ── Accessoire (hors oreilles déjà dessinées avant le cercle) ──
+  if(!isBunny&&!isCat){
+    if(acc==='glasses'||acc==='sunglasses'){
+      if(acc==='sunglasses'){
+        ctx.fillStyle='rgba(15,15,35,0.88)';
+        ctx.beginPath(); ctx.arc(41,53,13,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(87,53,13,0,Math.PI*2); ctx.fill();
+      }
+      ctx.strokeStyle='#333'; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(41,53,13,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(87,53,13,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(54,53); ctx.lineTo(74,53); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(20,49); ctx.lineTo(28,53); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(108,49); ctx.lineTo(100,53); ctx.stroke();
+    } else if(acc==='hat'){
+      ctx.fillStyle='#1a1a2e';
+      ctx.fillRect(36,24,56,18);
+      ctx.fillRect(22,40,84,10);
+    } else if(acc==='crown'){
+      ctx.fillStyle='#FFD700';
+      ctx.beginPath();
+      ctx.moveTo(20,36); ctx.lineTo(28,12); ctx.lineTo(44,24);
+      ctx.lineTo(64,8); ctx.lineTo(84,24); ctx.lineTo(100,12); ctx.lineTo(108,36);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='#b8860b'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='#FF6B6B'; ctx.beginPath(); ctx.arc(64,18,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#4ECDC4'; ctx.beginPath(); ctx.arc(36,26,3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(92,26,3,0,Math.PI*2); ctx.fill();
+    } else if(acc==='star'){
+      ebDrawStar(ctx,64,22,5,14,6,'#FFD700');
+      ctx.strokeStyle='#b8860b'; ctx.lineWidth=1; ctx.stroke();
+    } else if(acc==='mustache'){
+      ctx.fillStyle='#2a1a0a';
+      ctx.beginPath();
+      ctx.moveTo(cx,75);
+      ctx.bezierCurveTo(cx-8,68,cx-26,68,cx-22,76);
+      ctx.bezierCurveTo(cx-18,80,cx-10,74,cx,75);
+      ctx.bezierCurveTo(cx+10,74,cx+18,80,cx+22,76);
+      ctx.bezierCurveTo(cx+26,68,cx+8,68,cx,75);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  // ── Texte centré (à l'intérieur du cercle) ──
+  if(pos==='center'&&hasText){
+    const t=emojiBuilder.text.slice(0,6);
+    const fs=t.length===1?32:t.length===2?24:t.length===3?18:t.length===4?14:t.length===5?12:10;
+    ctx.font=`bold ${fs}px sans-serif`;
+    ctx.fillStyle='rgba(0,0,0,0.4)';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(t,cx,cy+6);
+  }
+
+  ctx.restore(); // fin translate
+
+  // ── Texte en bas ──
+  if(pos==='bottom'&&hasText){
+    const t=emojiBuilder.text;
+    const fs=t.length<=2?22:t.length<=4?17:13;
+    ctx.font=`bold ${fs}px sans-serif`;
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(t,64,128+extraTop+extraBot/2);
+  }
+}
+
+function ebDrawStar(ctx,cx,cy,spikes,outerR,innerR,color){
+  let rot=-Math.PI/2, step=Math.PI/spikes;
+  ctx.beginPath(); ctx.moveTo(cx+Math.cos(rot)*outerR, cy+Math.sin(rot)*outerR);
+  for(let i=0;i<spikes;i++){
+    rot+=step; ctx.lineTo(cx+Math.cos(rot)*innerR, cy+Math.sin(rot)*innerR);
+    rot+=step; ctx.lineTo(cx+Math.cos(rot)*outerR, cy+Math.sin(rot)*outerR);
+  }
+  ctx.closePath(); ctx.fillStyle=color; ctx.fill();
+}
+
+function validateEmojiBuilder(){
+  const canvas=document.getElementById('emoji-canvas');
+  setCustomAvatar(canvas.toDataURL('image/png'), ()=>openEmojiBuilder());
+  document.getElementById('r-avatar-file').value='';
+  closeModal('modal-emoji');
+}
+
+// ═══════════════════════════════════════════════════
+// MESSAGES VOCAUX
+// ═══════════════════════════════════════════════════
+let mediaRecorder = null;
+let audioChunks   = [];
+let isRecording   = false;
+
+function getBestMimeType(){
+  for(const t of ['audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/ogg',''	]){
+    if(!t || MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return '';
+}
+
+async function toggleVoiceRecord(){
+  if(isRecording){ stopVoiceRecord(); return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks = [];
+    const mimeType = getBestMimeType();
+    mediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : {});
+    mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = ()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      const blob = new Blob(audioChunks, {type:mimeType});
+      const reader = new FileReader();
+      reader.onload = e => {
+        if(currentRoomId && socket) socket.emit('send_message',{roomId:currentRoomId, content:e.target.result});
+      };
+      reader.readAsDataURL(blob);
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    const btn = document.getElementById('btn-voice');
+    btn.classList.add('recording');
+    btn.title = 'Arrêter l\'enregistrement';
+    setTimeout(()=>{ if(isRecording) stopVoiceRecord(); }, 60000);
+  }catch(e){ toast('Micro non disponible'); }
+}
+
+function stopVoiceRecord(){
+  if(!mediaRecorder) return;
+  mediaRecorder.stop();
+  isRecording = false;
+  const btn = document.getElementById('btn-voice');
+  btn.classList.remove('recording');
+  btn.title = 'Message vocal';
+}
+
+// ═══════════════════════════════════════════════════
+// APPELS VOCAUX (WebRTC)
+// ═══════════════════════════════════════════════════
+let peerConn           = null;
+let localStream        = null;
+let callPeerId         = null;
+let callTimer          = null;
+let callStartTime      = null;
+let callRingTimeout    = null;
+let ringCtx            = null;
+let pendingOffer       = null;
+let pendingIceCandidates = [];
+let sharedAudioCtx     = null;
+
+// Débloquer l'AudioContext sur le premier geste utilisateur
+document.addEventListener('click', ()=>{
+  if(!sharedAudioCtx) sharedAudioCtx = new AudioContext();
+  if(sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+}, {once:false});
+
+async function initiateCall(){
+  if(!currentRoomId) return;
+  const r = rooms.find(x=>x.id===currentRoomId);
+  if(!r) return;
+  if(r.is_dm){
+    const members = await api('GET',`/api/rooms/${currentRoomId}/members`);
+    const other = members.find(m=>m.id!==me.id);
+    if(!other){ toast('Personne à appeler'); return; }
+    startCall(other.id, other.username);
+  } else {
+    const members = await api('GET',`/api/rooms/${currentRoomId}/members`);
+    const others = members.filter(m=>m.id!==me.id);
+    if(!others.length){ toast('Aucun membre à appeler'); return; }
+    const list = document.getElementById('call-user-list');
+    list.innerHTML='';
+    for(const u of others){
+      const item = document.createElement('div');
+      item.className='user-item';
+      const on=onlineIds.has(u.id);
+      item.innerHTML=`
+        <span style="font-size:1.3rem">${renderAvatar(u.avatar)}</span>
+        <span class="u-name">${esc(u.username)}</span>
+        <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
+        <button class="dm-btn" onclick="event.stopPropagation();closeModal('modal-call-select');startCall(${u.id},${JSON.stringify(u.username)})">Appeler</button>
+      `;
+      list.appendChild(item);
+    }
+    document.getElementById('modal-call-select').style.display='flex';
+  }
+}
+
+async function startCall(toUserId, toUsername){
+  if(peerConn) return; // déjà en appel
+  callPeerId = toUserId;
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(e){ toast('Micro non disponible'); return; }
+
+  socket.emit('call_request',{toUserId});
+  document.getElementById('call-timer').textContent = `Appel vers ${toUsername}...`;
+  document.getElementById('call-active').classList.add('visible');
+
+  callRingTimeout = setTimeout(()=>{
+    socket.emit('call_end',{toUserId:callPeerId});
+    endCall(true);
+    toast('Pas de réponse');
+  }, 15000);
+
+  setupPeerConnection(toUserId);
+  const offer = await peerConn.createOffer();
+  await peerConn.setLocalDescription(offer);
+  socket.emit('call_offer',{toUserId, sdp:peerConn.localDescription});
+}
+
+function setupPeerConnection(toUserId){
+  peerConn = new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  if(localStream) localStream.getTracks().forEach(t=>peerConn.addTrack(t,localStream));
+  peerConn.ontrack = e => {
+    const ra = document.getElementById('remote-audio');
+    ra.srcObject = e.streams[0];
+    ra.play().catch(()=>{});
+  };
+  peerConn.onicecandidate = e => {
+    if(e.candidate) socket.emit('call_ice',{toUserId, candidate:e.candidate});
+  };
+  peerConn.onconnectionstatechange = ()=>{
+    if(peerConn.connectionState==='connected'){ clearTimeout(callRingTimeout); startCallTimer(); }
+    if(['disconnected','failed','closed'].includes(peerConn.connectionState)) endCall(true);
+  };
+}
+
+async function processPendingIce(){
+  while(pendingIceCandidates.length){
+    const c = pendingIceCandidates.shift();
+    try{ await peerConn.addIceCandidate(new RTCIceCandidate(c)); }catch(e){}
+  }
+}
+
+function startCallTimer(){
+  callStartTime = Date.now();
+  callTimer = setInterval(()=>{
+    const e = Math.floor((Date.now()-callStartTime)/1000);
+    const m = Math.floor(e/60), s = e%60;
+    document.getElementById('call-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  },1000);
+}
+
+async function acceptCall(){
+  stopRingtone();
+  clearTimeout(callRingTimeout);
+  document.getElementById('call-incoming').classList.remove('visible');
+  document.getElementById('call-active').classList.add('visible');
+  document.getElementById('call-timer').textContent = 'Connexion...';
+  try{
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(e){ toast('Micro non disponible'); endCall(); return; }
+  setupPeerConnection(callPeerId);
+  if(pendingOffer){
+    await peerConn.setRemoteDescription(pendingOffer);
+    pendingOffer = null;
+    await processPendingIce();
+    const answer = await peerConn.createAnswer();
+    await peerConn.setLocalDescription(answer);
+    socket.emit('call_answer',{toUserId:callPeerId, sdp:peerConn.localDescription});
+    startCallTimer();
+  }
+}
+
+function rejectCall(){
+  socket.emit('call_reject',{toUserId:callPeerId});
+  endCall(true);
+}
+
+function endCall(silent=false){
+  if(!silent && callPeerId) socket.emit('call_end',{toUserId:callPeerId});
+  clearTimeout(callRingTimeout);
+  clearInterval(callTimer);
+  callTimer=null; callRingTimeout=null; callPeerId=null;
+  pendingOffer=null; pendingIceCandidates=[];
+  if(peerConn){ peerConn.close(); peerConn=null; }
+  if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
+  document.getElementById('call-active').classList.remove('visible');
+  document.getElementById('call-incoming').classList.remove('visible');
+  stopRingtone();
+}
+
+function playRingtone(){
+  try{
+    const ctx = sharedAudioCtx || new AudioContext();
+    if(!sharedAudioCtx) sharedAudioCtx = ctx;
+    ringCtx = ctx;
+    if(ctx.state === 'suspended') ctx.resume();
+    let ringing = true;
+    ringCtx._stopRing = ()=>{ ringing=false; };
+    (function ring(){
+      if(!ringing || ringCtx !== ctx) return;
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value=440;
+      gain.gain.setValueAtTime(0.25,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.5);
+      setTimeout(ring,1500);
+    })();
+  }catch(e){}
+}
+function stopRingtone(){
+  if(ringCtx && ringCtx._stopRing) ringCtx._stopRing();
+  ringCtx = null;
+}
 
 // ═══════════════════════════════════════════════════
 // DÉMARRAGE
