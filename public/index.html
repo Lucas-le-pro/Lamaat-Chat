@@ -98,7 +98,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #btn-menu{display:none;background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer;padding:4px}
 @media(max-width:640px){#btn-menu{display:block}}
 #chat-room-name{font-weight:600;flex:1}
-#chat-members-count{font-size:.8rem;color:var(--text-muted)}
+#chat-members-count{font-size:.82rem;color:var(--text);background:#21262d;border:1px solid var(--border);border-radius:20px;padding:3px 10px;white-space:nowrap;transition:background .15s}
+#chat-members-count:hover{background:#2d333b}
 
 #messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
 #messages::-webkit-scrollbar{width:4px}
@@ -115,12 +116,26 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .msg-group.me .msg-bubble{background:var(--bubble-me);border-bottom-right-radius:4px;color:#fff}
 .msg-group.other .msg-bubble{background:var(--bubble-other);border-bottom-left-radius:4px}
 .msg-time{font-size:.65rem;color:var(--text-muted);padding:0 4px}
+.msg-reactions{display:flex;flex-wrap:wrap;gap:4px;padding:2px 4px}
+.reaction-btn{background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:2px 7px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:3px;transition:background .15s}
+.reaction-btn.mine{background:rgba(88,166,255,.18);border-color:var(--primary)}
+.reaction-btn:hover{background:var(--border)}
+.react-picker{position:fixed;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:6px 8px;display:flex;gap:6px;font-size:1.2rem;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.react-trigger{display:none;position:absolute;top:-12px;right:4px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1px 5px;cursor:pointer;font-size:.8rem;line-height:1.4;z-index:10}
+.msg-bubble{position:relative}
+.msg-bubble:hover .react-trigger{display:block}
+.msg-menu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:8px;z-index:900;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.msg-menu button{display:block;width:100%;padding:10px 16px;background:none;border:none;color:var(--text);font-size:.88rem;cursor:pointer;text-align:left;white-space:nowrap}
+.msg-menu button:hover{background:#2d333b}
+.msg-hidden-placeholder{font-size:.82rem;color:var(--text-muted);font-style:italic;padding:6px 10px;background:var(--surface);border:1px dashed var(--border);border-radius:12px;cursor:pointer}
+.msg-hidden-placeholder:hover{color:var(--primary)}
 
 .date-sep{text-align:center;font-size:.72rem;color:var(--text-muted);margin:8px 0;position:relative}
 .date-sep::before,.date-sep::after{content:'';position:absolute;top:50%;width:30%;height:1px;background:var(--border)}
 .date-sep::before{left:0} .date-sep::after{right:0}
 
 #typing-indicator{padding:4px 12px;font-size:.78rem;color:var(--text-muted);min-height:20px;font-style:italic}
+#new-msg-indicator{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:6px 16px;border-radius:20px;font-size:.82rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:10}
 
 #input-bar{
   padding:10px 12px;background:var(--surface);border-top:1px solid var(--border);
@@ -182,23 +197,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #btn-voice.recording{color:var(--danger);background:rgba(248,81,73,0.12);animation:pulse .9s infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 
-/* ── CALL ────────────────────────────────────────────────── */
-#btn-call{background:none;border:none;color:var(--text-muted);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:none;align-items:center;justify-content:center;transition:color .15s,background .15s;flex-shrink:0}
-#btn-call:hover{color:var(--online);background:rgba(63,185,80,0.12)}
-#btn-call.visible{display:flex}
-#call-incoming{position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#142214,#0d1117);border-bottom:2px solid var(--online);padding:12px 16px;display:none;align-items:center;gap:12px;animation:slideDown .3s ease}
-#call-incoming.visible{display:flex}
-@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
-#call-incoming .caller-info{flex:1}
-#call-incoming .caller-name{font-weight:700;font-size:1rem}
-#call-incoming .call-sub{font-size:.75rem;color:var(--online)}
-.call-btn{border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
-.call-btn.accept{background:var(--online);color:#fff}
-.call-btn.reject{background:var(--danger);color:#fff}
-#call-active{position:fixed;top:0;left:0;right:0;z-index:400;background:#0d1e0d;border-bottom:2px solid var(--online);padding:9px 16px;display:none;align-items:center;gap:10px}
-#call-active.visible{display:flex}
-#call-timer{font-weight:600;color:var(--online);flex:1;font-size:.9rem}
-#btn-hangup{background:var(--danger);border:none;color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.83rem;font-weight:600}
+
 </style>
 </head>
 <body>
@@ -210,7 +209,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <p id="auth-subtitle">Connecte-toi pour rejoindre tes potes</p>
 
     <div id="form-login">
-      <div class="field"><label>Pseudo</label><input id="l-user" type="text" autocomplete="username" placeholder="Ton pseudo"></div>
+      <div class="field"><label>Pseudo</label><input id="l-user" type="text" autocomplete="username" placeholder="Ton pseudo" autocorrect="off" autocapitalize="none" spellcheck="false"></div>
       <div class="field"><label>Mot de passe</label><input id="l-pass" type="password" autocomplete="current-password" placeholder="••••••"></div>
       <div class="err" id="l-err"></div>
       <button class="btn" onclick="doLogin()">Connexion</button>
@@ -218,7 +217,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     </div>
 
     <div id="form-register" style="display:none">
-      <div class="field"><label>Pseudo (2-20 caractères)</label><input id="r-user" type="text" autocomplete="username" placeholder="Ton pseudo"></div>
+      <div class="field"><label>Pseudo (2-20 caractères)</label><input id="r-user" type="text" autocomplete="username" placeholder="Ton pseudo" autocorrect="off" autocapitalize="none" spellcheck="false"></div>
       <div class="field"><label>Mot de passe</label><input id="r-pass" type="password" autocomplete="new-password" placeholder="Min 4 caractères"></div>
       <div class="field"><label>Ton avatar</label>
         <div class="avatar-row" id="avatar-row"></div>
@@ -267,11 +266,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       <div id="chat-header">
         <button id="btn-menu" onclick="openSidebar()">☰</button>
         <div id="chat-room-name">Sélectionne un salon</div>
-        <div id="chat-members-count"></div>
-        <button id="btn-call" title="Appel vocal" onclick="initiateCall()">📞</button>
+        <div id="chat-members-count" style="cursor:pointer" onclick="openMembersList()"></div>
+        <button id="btn-add-member" title="Ajouter un membre" onclick="openAddMember()" style="display:none">➕</button>
       </div>
 
       <div id="messages"></div>
+      <div id="new-msg-indicator" onclick="scrollToBottom()" style="display:none">⬇ nouveau message</div>
       <div id="typing-indicator"></div>
 
       <div id="input-bar">
@@ -349,35 +349,30 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
-<!-- APPEL ENTRANT -->
-<div id="call-incoming">
-  <div style="font-size:1.6rem" id="call-incoming-avatar">📞</div>
-  <div class="caller-info">
-    <div class="caller-name" id="call-incoming-name">Appel entrant</div>
-    <div class="call-sub">Appel vocal...</div>
-  </div>
-  <button class="call-btn reject" onclick="rejectCall()" title="Refuser">📵</button>
-  <button class="call-btn accept" onclick="acceptCall()" title="Accepter">📞</button>
-</div>
 
-<!-- APPEL EN COURS -->
-<div id="call-active">
-  <div style="font-size:1rem">📞</div>
-  <div id="call-timer">Connexion...</div>
-  <button id="btn-hangup" onclick="endCall()">Raccrocher</button>
-</div>
-
-<!-- MODAL CHOISIR QUI APPELER (groupe) -->
-<div class="modal-bg" id="modal-call-select" style="display:none">
+<div class="modal-bg" id="modal-add-member" style="display:none">
   <div class="modal">
-    <h3>Appeler...</h3>
-    <div class="user-list" id="call-user-list"></div>
-    <div class="btn-row"><button class="cancel" onclick="closeModal('modal-call-select')">Annuler</button></div>
+    <h3>Ajouter un membre</h3>
+    <div class="user-list" id="add-member-list"></div>
+    <div class="btn-row"><button class="cancel" onclick="closeModal('modal-add-member')">Annuler</button></div>
   </div>
 </div>
 
-<!-- AUDIO DISTANT (appels) -->
-<audio id="remote-audio" autoplay style="display:none"></audio>
+<div class="modal-bg" id="modal-members" style="display:none">
+  <div class="modal">
+    <h3>Membres</h3>
+    <div class="user-list" id="members-list"></div>
+    <div class="btn-row"><button class="cancel" onclick="closeModal('modal-members')">Fermer</button></div>
+  </div>
+</div>
+
+<div id="kick-notif" style="display:none;position:fixed;top:0;left:0;right:0;z-index:600;background:#1a1a2e;border-bottom:2px solid var(--danger);padding:12px 16px;text-align:center">
+  <div id="kick-notif-text" style="margin-bottom:8px;font-size:.95rem"></div>
+  <div style="display:flex;gap:8px;justify-content:center">
+    <button onclick="respondKick(true)" style="background:var(--danger);color:#fff;border:none;padding:6px 18px;border-radius:6px;cursor:pointer">Quitter</button>
+    <button onclick="respondKick(false)" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text);padding:6px 18px;border-radius:6px;cursor:pointer">Refuser</button>
+  </div>
+</div>
 
 <!-- TOAST -->
 <div id="toast"></div>
@@ -394,6 +389,7 @@ let currentRoomId = null;
 let onlineIds = new Set();
 let typingTimers = {};
 let selectedAvatar = '😀';
+let hiddenMessages = new Set(JSON.parse(localStorage.getItem('hiddenMsgs')||'[]'));
 
 const AVATARS = [
   '😀','😄','😂','🥹','😎','🤩','🥸','🥷','🧙','🧝','🧛','🧟',
@@ -405,10 +401,11 @@ const AVATARS = [
 // ═══════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════
-function showLogin(){ document.getElementById('form-login').style.display=''; document.getElementById('form-register').style.display='none'; }
+function showLogin(){ document.getElementById('form-login').style.display=''; document.getElementById('form-register').style.display='none'; document.getElementById('auth-subtitle').textContent='Connecte-toi pour rejoindre tes potes'; }
 function showRegister(){
   document.getElementById('form-login').style.display='none';
   document.getElementById('form-register').style.display='';
+  document.getElementById('auth-subtitle').textContent='Crée ton compte et rejoins tes potes';
   buildAvatarRow();
 }
 
@@ -496,6 +493,7 @@ async function doRegister(){
 }
 
 async function doLogout(){
+  if(!confirm('Se déconnecter ?')) return;
   await api('POST','/api/logout');
   if(socket) socket.disconnect();
   me=null; currentRoomId=null; rooms=[];
@@ -563,48 +561,49 @@ function connectSocket(){
     typingTimers[userId] = setTimeout(()=>clearTyping(userId), 3000);
   });
 
-  // ── Appels vocaux ──────────────────────────────────────────
-  socket.on('call_incoming', ({ fromUserId, fromName, fromAvatar }) => {
-    callPeerId = fromUserId;
-    document.getElementById('call-incoming-name').textContent = fromName;
-    document.getElementById('call-incoming-avatar').innerHTML = renderAvatar(fromAvatar) || '📞';
-    document.getElementById('call-incoming').classList.add('visible');
-    playRingtone();
-    if(navigator.vibrate) navigator.vibrate([400,200,400,200,400]);
-    callRingTimeout = setTimeout(()=>{ rejectCall(); }, 15000);
+  socket.on('reactions_update', ({messageId, reactions})=>{
+    renderReactions(messageId, reactions);
   });
 
-  socket.on('call_offer', async ({ sdp }) => {
-    const desc = new RTCSessionDescription(sdp);
-    if(peerConn && peerConn.signalingState === 'stable'){
-      await peerConn.setRemoteDescription(desc);
-      await processPendingIce();
-      const answer = await peerConn.createAnswer();
-      await peerConn.setLocalDescription(answer);
-      socket.emit('call_answer', { toUserId: callPeerId, sdp: peerConn.localDescription });
-      startCallTimer();
-    } else {
-      pendingOffer = desc;
-    }
+  socket.on('kick_incoming', ({roomId, roomName, fromName})=>{
+    pendingKickRoomId = roomId;
+    document.getElementById('kick-notif-text').textContent = `${fromName} veut vous retirer du salon "${roomName}"`;
+    document.getElementById('kick-notif').style.display='';
   });
 
-  socket.on('call_answer', async ({ sdp }) => {
-    if(peerConn) {
-      await peerConn.setRemoteDescription(new RTCSessionDescription(sdp));
-      await processPendingIce();
-    }
+  socket.on('kick_done', ({roomId})=>{
+    rooms = rooms.filter(r=>r.id!==roomId);
+    if(currentRoomId===roomId){ currentRoomId=null; document.getElementById('messages').innerHTML=''; document.getElementById('chat-room-name').textContent='Sélectionne un salon'; document.getElementById('chat-members-count').textContent=''; }
+    renderRoomList();
+    toast('Tu as quitté le salon');
   });
 
-  socket.on('call_ice', async ({ candidate }) => {
-    if(peerConn && peerConn.remoteDescription){
-      try{ await peerConn.addIceCandidate(new RTCIceCandidate(candidate)); }catch(e){}
-    } else {
-      pendingIceCandidates.push(candidate);
-    }
+  socket.on('kick_done_offline', ({username})=>{
+    toast(`${username} a été retiré du salon`);
   });
 
-  socket.on('call_rejected', () => { endCall(true); toast('Appel refusé'); });
-  socket.on('call_ended',   () => { endCall(true); });
+  socket.on('message_deleted', ({messageId})=>{
+    const bubble = document.querySelector(`.msg-bubble[data-msg-id="${messageId}"]`);
+    if(!bubble) return;
+    const group = bubble.closest('.msg-group');
+    // Supprimer la bulle + sa zone réactions + son time si c'est le seul msg du groupe
+    const reactZone = document.getElementById(`reactions-${messageId}`);
+    bubble.remove();
+    reactZone?.remove();
+    // Si le groupe est vide (plus de bulles), retirer le groupe entier
+    if(group && !group.querySelector('.msg-bubble')) group.remove();
+  });
+
+  socket.on('kick_refused', ({username})=>{
+    toast(`${username} a refusé de quitter le salon`);
+  });
+
+  socket.on('member_left', ({userId, username, roomId})=>{
+    if(userId!==me.id) toast(`${username} a quitté le salon`);
+    // Rafraîchir le compteur si on est dans ce salon
+    if(currentRoomId===roomId) refreshMembersCount();
+  });
+
 }
 
 // ═══════════════════════════════════════════════════
@@ -680,11 +679,15 @@ async function openRoom(roomId){
   const members = await api('GET',`/api/rooms/${roomId}/members`);
   if(Array.isArray(members)){
     const onlineCount = members.filter(m=>onlineIds.has(m.id)).length;
-    document.getElementById('chat-members-count').textContent = `${members.length} membres • ${onlineCount} en ligne`;
+    document.getElementById('chat-members-count').textContent = `👥 ${members.length} membres • ${onlineCount} en ligne`;
   }
 
+  // Bouton ➕ visible uniquement pour le créateur d'un groupe
+  const addBtn = document.getElementById('btn-add-member');
+  if(r && !r.is_dm && r.created_by === me.id) addBtn.style.display='';
+  else addBtn.style.display='none';
+
   document.getElementById('msg-input').focus();
-  document.getElementById('btn-call').classList.add('visible');
 }
 
 // ═══════════════════════════════════════════════════
@@ -702,6 +705,7 @@ function renderMessages(msgs){
 
 function appendMessage(msg, noScroll){
   const box = document.getElementById('messages');
+  const wasAtBottom = isAtBottom();
   const date = new Date(msg.sent_at*1000);
   const dateStr = date.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
 
@@ -726,7 +730,7 @@ function appendMessage(msg, noScroll){
     if(!isMe && !sameUser){
       const sender = document.createElement('div');
       sender.className='msg-sender';
-      sender.innerHTML=renderAvatar(msg.avatar)+' '+esc(msg.username);
+      sender.textContent=msg.username || '?';
       group.appendChild(sender);
     }
     box.appendChild(group);
@@ -735,29 +739,115 @@ function appendMessage(msg, noScroll){
 
   const bubble = document.createElement('div');
   bubble.className='msg-bubble';
-  if(msg.content.startsWith('data:audio/')){
-    bubble.classList.add('msg-audio');
-    const audio = document.createElement('audio');
-    audio.src = msg.content;
-    audio.controls = true;
-    bubble.appendChild(audio);
+  bubble.dataset.msgId = msg.id;
+  bubble.dataset.roomId = msg.room_id;
+
+  if(hiddenMessages.has(msg.id)){
+    // Afficher placeholder directement
+    const ph = document.createElement('span');
+    ph.className='msg-hidden-placeholder';
+    ph.textContent='Message masqué • Afficher';
+    bubble.style.display='none';
+    group.appendChild(bubble);
+    group.appendChild(ph);
+    ph.onclick=()=>showMsg(msg.id, bubble, ph);
   } else {
-    bubble.textContent = msg.content;
+    if(msg.content.startsWith('data:audio/')){
+      bubble.classList.add('msg-audio');
+      const audio = document.createElement('audio');
+      audio.src = msg.content;
+      audio.controls = true;
+      bubble.appendChild(audio);
+    } else {
+      bubble.textContent = msg.content;
+    }
+
+    // Clic droit / long-press → menu contextuel
+    let pressTimer = null;
+    bubble.addEventListener('contextmenu', e => { e.preventDefault(); showMsgMenu(e, msg.id, msg.room_id, isMe); });
+    bubble.addEventListener('touchstart', () => { pressTimer = setTimeout(() => showMsgMenuTouch(msg.id, msg.room_id, isMe), 500); }, {passive:true});
+    bubble.addEventListener('touchend', () => clearTimeout(pressTimer), {passive:true});
+    bubble.addEventListener('touchmove', () => clearTimeout(pressTimer), {passive:true});
+
+    // Bouton réaction au survol
+    const trigger = document.createElement('span');
+    trigger.className='react-trigger';
+    trigger.textContent='😊';
+    trigger.onclick = e => { e.stopPropagation(); showReactPicker(e, msg.id); };
+    bubble.appendChild(trigger);
+
+    group.appendChild(bubble);
   }
-  group.appendChild(bubble);
+
+  // Zone réactions
+  const reactZone = document.createElement('div');
+  reactZone.className='msg-reactions';
+  reactZone.id=`reactions-${msg.id}`;
+  group.appendChild(reactZone);
 
   const time = document.createElement('div');
   time.className='msg-time';
   time.textContent=date.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   group.appendChild(time);
 
-  if(!noScroll) scrollToBottom();
+  if(!noScroll){
+    const isMe = msg.user_id === me.id;
+    if(isMe || wasAtBottom) scrollToBottom();
+    else document.getElementById('new-msg-indicator').style.display='';
+  }
+}
+
+const REACT_EMOJIS = ['👍','❤️','😂','😮','😢','🔥','🎉','👏'];
+let reactPicker = null;
+
+function showReactPicker(e, msgId){
+  if(reactPicker) reactPicker.remove();
+  const picker = document.createElement('div');
+  picker.className='react-picker';
+  REACT_EMOJIS.forEach(emoji => {
+    const btn = document.createElement('span');
+    btn.textContent=emoji; btn.style.cursor='pointer';
+    btn.onclick = ev => { ev.stopPropagation(); socket.emit('react',{messageId:msgId,emoji,roomId:currentRoomId}); picker.remove(); reactPicker=null; };
+    picker.appendChild(btn);
+  });
+  document.body.appendChild(picker);
+  picker.style.left = Math.min(e.clientX, window.innerWidth-picker.offsetWidth-10)+'px';
+  picker.style.top  = (e.clientY - 50)+'px';
+  reactPicker = picker;
+}
+
+function renderReactions(messageId, reactions){
+  const zone = document.getElementById(`reactions-${messageId}`);
+  if(!zone) return;
+  zone.innerHTML='';
+  for(const r of reactions){
+    const userIds = r.user_ids.split(',').map(Number);
+    const btn = document.createElement('button');
+    btn.className='reaction-btn'+(userIds.includes(me.id)?' mine':'');
+    btn.innerHTML=`${r.emoji} <span>${r.count}</span>`;
+    btn.title=`${r.count} réaction${r.count>1?'s':''}`;
+    btn.onclick=()=>socket.emit('react',{messageId,emoji:r.emoji,roomId:currentRoomId});
+    zone.appendChild(btn);
+  }
+}
+
+function isAtBottom(){
+  const box=document.getElementById('messages');
+  return box.scrollHeight - box.scrollTop - box.clientHeight < 60;
 }
 
 function scrollToBottom(){
   const box=document.getElementById('messages');
   box.scrollTop=box.scrollHeight;
+  document.getElementById('new-msg-indicator').style.display='none';
 }
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('messages').addEventListener('scroll',()=>{
+    if(isAtBottom()) document.getElementById('new-msg-indicator').style.display='none';
+  });
+  document.addEventListener('click', ()=>{ if(reactPicker){ reactPicker.remove(); reactPicker=null; } });
+});
 
 // ═══════════════════════════════════════════════════
 // ENVOI
@@ -1266,13 +1356,20 @@ let mediaRecorder = null;
 let audioChunks   = [];
 let isRecording   = false;
 
+function getBestMimeType(){
+  for(const t of ['audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/ogg',''	]){
+    if(!t || MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return '';
+}
+
 async function toggleVoiceRecord(){
   if(isRecording){ stopVoiceRecord(); return; }
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     audioChunks = [];
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
-    mediaRecorder = new MediaRecorder(stream, {mimeType});
+    const mimeType = getBestMimeType();
+    mediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : {});
     mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
     mediaRecorder.onstop = ()=>{
       stream.getTracks().forEach(t=>t.stop());
@@ -1301,161 +1398,151 @@ function stopVoiceRecord(){
   btn.title = 'Message vocal';
 }
 
-// ═══════════════════════════════════════════════════
-// APPELS VOCAUX (WebRTC)
-// ═══════════════════════════════════════════════════
-let peerConn           = null;
-let localStream        = null;
-let callPeerId         = null;
-let callTimer          = null;
-let callStartTime      = null;
-let callRingTimeout    = null;
-let ringCtx            = null;
-let pendingOffer       = null;
-let pendingIceCandidates = [];
+let pendingKickRoomId = null;
 
-async function initiateCall(){
+// ── Menu contextuel messages ──────────────────────────────
+function saveHidden(){ localStorage.setItem('hiddenMsgs', JSON.stringify([...hiddenMessages])); }
+
+function buildMsgMenu(msgId, roomId, isOwn){
+  closeMsgMenu();
+  const menu = document.createElement('div');
+  menu.className='msg-menu';
+  menu.id='active-msg-menu';
+  if(isOwn){
+    const del = document.createElement('button');
+    del.textContent='🗑 Supprimer pour tous';
+    del.onclick=()=>{ closeMsgMenu(); if(confirm('Supprimer ce message pour tout le monde ?')) socket.emit('delete_message',{messageId:msgId,roomId}); };
+    menu.appendChild(del);
+  }
+  const hide = document.createElement('button');
+  hide.textContent='🙈 Masquer pour moi';
+  hide.onclick=()=>{ closeMsgMenu(); hideMsg(msgId); };
+  menu.appendChild(hide);
+  document.body.appendChild(menu);
+  return menu;
+}
+
+function showMsgMenu(e, msgId, roomId, isOwn){
+  e.preventDefault(); e.stopPropagation();
+  const menu = buildMsgMenu(msgId, roomId, isOwn);
+  let top = e.clientY+4;
+  let left = e.clientX;
+  if(left+160>window.innerWidth) left=window.innerWidth-164;
+  if(top+80>window.innerHeight) top=e.clientY-84;
+  menu.style.top=top+'px'; menu.style.left=left+'px';
+}
+
+function showMsgMenuTouch(msgId, roomId, isOwn){
+  const menu = buildMsgMenu(msgId, roomId, isOwn);
+  menu.style.top='50%'; menu.style.left='50%';
+  menu.style.transform='translate(-50%,-50%)';
+}
+function closeMsgMenu(){ document.getElementById('active-msg-menu')?.remove(); }
+document.addEventListener('click', closeMsgMenu);
+
+function hideMsg(msgId){
+  hiddenMessages.add(msgId);
+  saveHidden();
+  const bubble = document.querySelector(`.msg-bubble[data-msg-id="${msgId}"]`);
+  if(!bubble) return;
+  const ph = document.createElement('span');
+  ph.className='msg-hidden-placeholder';
+  ph.textContent='Message masqué • Afficher';
+  ph.onclick=()=>showMsg(msgId, bubble, ph);
+  bubble.style.display='none';
+  bubble.parentNode.insertBefore(ph, bubble);
+}
+
+function showMsg(msgId, bubble, ph){
+  hiddenMessages.delete(msgId);
+  saveHidden();
+  ph.remove();
+  bubble.style.display='';
+}
+
+async function refreshMembersCount(){
+  if(!currentRoomId) return;
+  const members = await api('GET',`/api/rooms/${currentRoomId}/members`);
+  if(!Array.isArray(members)) return;
+  const onlineCount = members.filter(m=>onlineIds.has(m.id)).length;
+  document.getElementById('chat-members-count').textContent = `👥 ${members.length} membres • ${onlineCount} en ligne`;
+}
+
+async function openMembersList(){
   if(!currentRoomId) return;
   const r = rooms.find(x=>x.id===currentRoomId);
-  if(!r) return;
-  if(r.is_dm){
-    const members = await api('GET',`/api/rooms/${currentRoomId}/members`);
-    const other = members.find(m=>m.id!==me.id);
-    if(!other){ toast('Personne à appeler'); return; }
-    startCall(other.id, other.username);
-  } else {
-    const members = await api('GET',`/api/rooms/${currentRoomId}/members`);
-    const others = members.filter(m=>m.id!==me.id);
-    if(!others.length){ toast('Aucun membre à appeler'); return; }
-    const list = document.getElementById('call-user-list');
-    list.innerHTML='';
-    for(const u of others){
-      const item = document.createElement('div');
-      item.className='user-item';
-      const on=onlineIds.has(u.id);
-      item.innerHTML=`
-        <span style="font-size:1.3rem">${renderAvatar(u.avatar)}</span>
-        <span class="u-name">${esc(u.username)}</span>
-        <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
-        <button class="dm-btn" onclick="event.stopPropagation();closeModal('modal-call-select');startCall(${u.id},${JSON.stringify(u.username)})">Appeler</button>
-      `;
-      list.appendChild(item);
+  if(!r || r.is_dm) return;
+  const members = await api('GET', `/api/rooms/${currentRoomId}/members`);
+  const list = document.getElementById('members-list');
+  list.innerHTML='';
+  const isCreator = r.created_by === me.id;
+  for(const m of members){
+    const item = document.createElement('div');
+    item.className='user-item';
+    const on=onlineIds.has(m.id);
+    item.innerHTML=`
+      <span style="font-size:1.3rem">${renderAvatar(m.avatar)}</span>
+      <span class="u-name">${esc(m.username)}${m.id===r.created_by?' 👑':''}</span>
+      <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
+      ${isCreator && m.id!==me.id?`<button class="dm-btn" style="background:var(--danger)" onclick="requestKick(${m.id},'${esc(m.username)}')">✖</button>`:''}
+    `;
+    list.appendChild(item);
+  }
+  document.getElementById('modal-members').style.display='flex';
+}
+
+function requestKick(userId, username){
+  if(!confirm(`Demander à ${username} de quitter le salon ?`)) return;
+  socket.emit('kick_request', { roomId: currentRoomId, targetId: userId });
+  closeModal('modal-members');
+  toast(`Demande envoyée à ${username}`);
+}
+
+function respondKick(accept){
+  socket.emit(accept ? 'kick_accept' : 'kick_refuse', { roomId: pendingKickRoomId });
+  document.getElementById('kick-notif').style.display='none';
+  pendingKickRoomId=null;
+}
+
+async function openAddMember(){
+  if(!currentRoomId) return;
+  const allUsers = await api('GET', '/api/users');
+  const members = await api('GET', `/api/rooms/${currentRoomId}/members`);
+  const memberIds = new Set(members.map(m => m.id));
+  const nonMembers = allUsers.filter(u => !memberIds.has(u.id));
+  const list = document.getElementById('add-member-list');
+  list.innerHTML = '';
+  if(!nonMembers.length){ list.innerHTML = '<p style="color:var(--muted);text-align:center">Tout le monde est déjà dans le groupe</p>'; }
+  for(const u of nonMembers){
+    const item = document.createElement('div');
+    item.className = 'user-item';
+    const on = onlineIds.has(u.id);
+    item.innerHTML = `
+      <span style="font-size:1.3rem">${renderAvatar(u.avatar)}</span>
+      <span class="u-name">${esc(u.username)}</span>
+      <div class="online-dot ${on?'on':''}" title="${on?'En ligne':'Hors ligne'}"></div>
+      <button class="dm-btn" onclick="addMemberToRoom(${u.id}, this)">Ajouter</button>
+    `;
+    list.appendChild(item);
+  }
+  document.getElementById('modal-add-member').style.display = 'flex';
+}
+
+async function addMemberToRoom(userId, btn){
+  btn.disabled = true;
+  btn.textContent = '...';
+  const res = await api('POST', `/api/rooms/${currentRoomId}/members`, { userId });
+  if(res.ok){
+    btn.textContent = '✓';
+    const members = await api('GET', `/api/rooms/${currentRoomId}/members`);
+    if(Array.isArray(members)){
+      const onlineCount = members.filter(m=>onlineIds.has(m.id)).length;
+      document.getElementById('chat-members-count').textContent = `👥 ${members.length} membres • ${onlineCount} en ligne`;
     }
-    document.getElementById('modal-call-select').style.display='flex';
+  } else {
+    btn.textContent = res.error || 'Erreur';
   }
 }
-
-async function startCall(toUserId, toUsername){
-  if(peerConn) return; // déjà en appel
-  callPeerId = toUserId;
-  try{
-    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
-  }catch(e){ toast('Micro non disponible'); return; }
-
-  socket.emit('call_request',{toUserId});
-  document.getElementById('call-timer').textContent = `Appel vers ${toUsername}...`;
-  document.getElementById('call-active').classList.add('visible');
-
-  callRingTimeout = setTimeout(()=>{
-    socket.emit('call_end',{toUserId:callPeerId});
-    endCall(true);
-    toast('Pas de réponse');
-  }, 15000);
-
-  setupPeerConnection(toUserId);
-  const offer = await peerConn.createOffer();
-  await peerConn.setLocalDescription(offer);
-  socket.emit('call_offer',{toUserId, sdp:peerConn.localDescription});
-}
-
-function setupPeerConnection(toUserId){
-  peerConn = new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
-  if(localStream) localStream.getTracks().forEach(t=>peerConn.addTrack(t,localStream));
-  peerConn.ontrack = e => {
-    const ra = document.getElementById('remote-audio');
-    ra.srcObject = e.streams[0];
-    ra.play().catch(()=>{});
-  };
-  peerConn.onicecandidate = e => {
-    if(e.candidate) socket.emit('call_ice',{toUserId, candidate:e.candidate});
-  };
-  peerConn.onconnectionstatechange = ()=>{
-    if(peerConn.connectionState==='connected'){ clearTimeout(callRingTimeout); startCallTimer(); }
-    if(['disconnected','failed','closed'].includes(peerConn.connectionState)) endCall(true);
-  };
-}
-
-async function processPendingIce(){
-  while(pendingIceCandidates.length){
-    const c = pendingIceCandidates.shift();
-    try{ await peerConn.addIceCandidate(new RTCIceCandidate(c)); }catch(e){}
-  }
-}
-
-function startCallTimer(){
-  callStartTime = Date.now();
-  callTimer = setInterval(()=>{
-    const e = Math.floor((Date.now()-callStartTime)/1000);
-    const m = Math.floor(e/60), s = e%60;
-    document.getElementById('call-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-  },1000);
-}
-
-async function acceptCall(){
-  stopRingtone();
-  clearTimeout(callRingTimeout);
-  document.getElementById('call-incoming').classList.remove('visible');
-  document.getElementById('call-active').classList.add('visible');
-  document.getElementById('call-timer').textContent = 'Connexion...';
-  try{
-    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
-  }catch(e){ toast('Micro non disponible'); endCall(); return; }
-  setupPeerConnection(callPeerId);
-  if(pendingOffer){
-    await peerConn.setRemoteDescription(pendingOffer);
-    pendingOffer = null;
-    await processPendingIce();
-    const answer = await peerConn.createAnswer();
-    await peerConn.setLocalDescription(answer);
-    socket.emit('call_answer',{toUserId:callPeerId, sdp:peerConn.localDescription});
-    startCallTimer();
-  }
-}
-
-function rejectCall(){
-  socket.emit('call_reject',{toUserId:callPeerId});
-  endCall(true);
-}
-
-function endCall(silent=false){
-  if(!silent && callPeerId) socket.emit('call_end',{toUserId:callPeerId});
-  clearTimeout(callRingTimeout);
-  clearInterval(callTimer);
-  callTimer=null; callRingTimeout=null; callPeerId=null;
-  pendingOffer=null; pendingIceCandidates=[];
-  if(peerConn){ peerConn.close(); peerConn=null; }
-  if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream=null; }
-  document.getElementById('call-active').classList.remove('visible');
-  document.getElementById('call-incoming').classList.remove('visible');
-  stopRingtone();
-}
-
-function playRingtone(){
-  try{
-    ringCtx = new AudioContext();
-    (function ring(){
-      if(!ringCtx) return;
-      const osc=ringCtx.createOscillator(), gain=ringCtx.createGain();
-      osc.connect(gain); gain.connect(ringCtx.destination);
-      osc.frequency.value=440;
-      gain.gain.setValueAtTime(0.25,ringCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001,ringCtx.currentTime+0.5);
-      osc.start(ringCtx.currentTime); osc.stop(ringCtx.currentTime+0.5);
-      setTimeout(ring,1500);
-    })();
-  }catch(e){}
-}
-function stopRingtone(){ if(ringCtx){ try{ringCtx.close();}catch(e){} ringCtx=null; } }
 
 // ═══════════════════════════════════════════════════
 // DÉMARRAGE
