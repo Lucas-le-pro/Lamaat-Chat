@@ -40,6 +40,13 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_messages_room ON messages(room_id, sent_at);
+
+  CREATE TABLE IF NOT EXISTS reactions (
+    message_id INTEGER NOT NULL,
+    user_id    INTEGER NOT NULL,
+    emoji      TEXT    NOT NULL,
+    PRIMARY KEY (message_id, user_id, emoji)
+  );
 `);
 
 // ── Requêtes préparées ────────────────────────────────────────
@@ -69,12 +76,22 @@ const queries = {
   isMember:     db.prepare('SELECT 1 FROM room_members WHERE room_id=? AND user_id=?'),
 
   insertMsg:    db.prepare('INSERT INTO messages (room_id, user_id, content) VALUES (?, ?, ?)'),
+  deleteMsg:    db.prepare('DELETE FROM messages WHERE id=? AND user_id=?'),
   getMessages:  db.prepare(`
-    SELECT m.id, m.content, m.sent_at, u.id as user_id, u.username, u.avatar
+    SELECT m.id, m.content, m.sent_at, u.id as user_id, u.username
     FROM messages m JOIN users u ON u.id = m.user_id
     WHERE m.room_id = ?
     ORDER BY m.sent_at ASC
     LIMIT 100
+  `),
+
+  addReaction:    db.prepare('INSERT OR IGNORE INTO reactions (message_id, user_id, emoji) VALUES (?, ?, ?)'),
+  removeReaction: db.prepare('DELETE FROM reactions WHERE message_id=? AND user_id=? AND emoji=?'),
+  getReactions:   db.prepare('SELECT emoji, user_id FROM reactions WHERE message_id=?'),
+  getMsgReactions: db.prepare(`
+    SELECT r.emoji, COUNT(*) as count, GROUP_CONCAT(r.user_id) as user_ids
+    FROM reactions r WHERE r.message_id=?
+    GROUP BY r.emoji
   `),
 
   findDM: db.prepare(`
