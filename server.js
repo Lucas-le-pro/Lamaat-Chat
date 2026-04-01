@@ -5,6 +5,7 @@ const bcrypt     = require('bcryptjs');
 const jwt        = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const path       = require('path');
+const rateLimit  = require('express-rate-limit');
 const { queries, db } = require('./db');
 const { handleMessage, botUser } = require('./bot');
 
@@ -41,8 +42,16 @@ function authMiddleware(req, res, next) {
 
 // ── Routes API ───────────────────────────────────────────────
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 7,
+  message: { error: 'Trop de tentatives, réessaie dans 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Inscription
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', authLimiter, async (req, res) => {
   const { username, password, avatar } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Champs manquants' });
   if (username.length < 2 || username.length > 20)
@@ -78,7 +87,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Connexion
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', authLimiter, async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Champs manquants' });
 
@@ -114,7 +123,7 @@ app.get('/api/rooms', authMiddleware, (req, res) => {
     if (r.is_dm) {
       const members = queries.getMembers.all(r.id);
       const other = members.find(m => m.id !== req.user.id);
-      if (other) { r._otherName = other.username; r._otherAvatar = other.avatar; }
+      if (other) { r._otherName = other.username; r._otherAvatar = other.avatar; r._otherId = other.id; }
     }
   }
   res.json(rooms);
@@ -178,6 +187,23 @@ app.get('/api/rooms/:id/members', authMiddleware, (req, res) => {
   res.json(queries.getMembers.all(roomId));
 });
 
+// Ajouter un membre à un groupe (créateur seulement)
+app.post('/api/rooms/:id/members', authMiddleware, (req, res) => {
+  const roomId = parseInt(req.params.id);
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: 'userId manquant' });
+  const room = db.prepare('SELECT * FROM rooms WHERE id=?').get(roomId);
+  if (!room) return res.status(404).json({ error: 'Salon introuvable' });
+  if (room.is_dm) return res.status(400).json({ error: 'Impossible d\'ajouter dans un DM' });
+  if (room.created_by !== req.user.id) return res.status(403).json({ error: 'Seul le créateur peut ajouter des membres' });
+  if (queries.isMember.get(roomId, userId)) return res.status(409).json({ error: 'Déjà membre' });
+  queries.addMember.run(roomId, userId);
+  const newMember = queries.getUserById.get(userId);
+  notifyRoomAdded([userId], room);
+  io.to(`room:${roomId}`).emit('member_added', { roomId, user: newMember });
+  res.json({ ok: true });
+});
+
 // Liste de tous les utilisateurs
 app.get('/api/users', authMiddleware, (req, res) => {
   res.json(queries.getAllUsers.all().filter(u => u.id !== botUser.id));
@@ -233,7 +259,6 @@ io.on('connection', socket => {
       sent_at: Math.floor(Date.now() / 1000),
       user_id: user.id,
       username: user.username,
-      avatar: user.avatar,
     };
     io.to(`room:${roomId}`).emit('message', msg);
 
@@ -255,30 +280,58 @@ io.on('connection', socket => {
     socket.to(`room:${roomId}`).emit('typing', { userId: user.id, username: user.username, typing });
   });
 
-  // ── WebRTC signaling ────────────────────────────────────────
-  function toUser(userId, event, data) {
-    for (const [sid, u] of onlineUsers) {
-      if (u.id === userId) io.to(sid).emit(event, data);
+  // Supprimer un message
+  socket.on('delete_message', ({ messageId, roomId }) => {
+    if (!queries.isMember.get(roomId, user.id)) return;
+    const result = queries.deleteMsg.run(messageId, user.id);
+    if (result.changes > 0) {
+      io.to(`room:${roomId}`).emit('message_deleted', { messageId });
     }
-  }
+  });
 
-  socket.on('call_request', ({ toUserId }) => {
-    toUser(toUserId, 'call_incoming', { fromUserId: user.id, fromName: user.username, fromAvatar: user.avatar });
+  // Réactions
+  socket.on('react', ({ messageId, emoji, roomId }) => {
+    const existing = queries.getReactions.all(messageId).find(r => r.user_id === user.id && r.emoji === emoji);
+    if (existing) queries.removeReaction.run(messageId, user.id, emoji);
+    else queries.addReaction.run(messageId, user.id, emoji);
+    const reactions = queries.getMsgReactions.all(messageId);
+    io.to(`room:${roomId}`).emit('reactions_update', { messageId, reactions, myId: user.id });
   });
-  socket.on('call_offer', ({ toUserId, sdp }) => {
-    toUser(toUserId, 'call_offer', { fromUserId: user.id, sdp });
+
+  // Kick
+  socket.on('kick_request', ({ roomId, targetId }) => {
+    const room = db.prepare('SELECT * FROM rooms WHERE id=?').get(roomId);
+    if (!room || room.is_dm || room.created_by !== user.id) return;
+    if (!queries.isMember.get(roomId, targetId)) return;
+    const target = queries.getUserById.get(targetId);
+    if (!target) return;
+    const targetSockets = [...onlineUsers.entries()].filter(([, u]) => u.id === targetId);
+    if (targetSockets.length > 0) {
+      // Cible en ligne : demande avec consentement
+      for (const [sid] of targetSockets) io.to(sid).emit('kick_incoming', { roomId, roomName: room.name, fromName: user.username });
+    } else {
+      // Cible hors ligne : kick direct
+      db.prepare('DELETE FROM room_members WHERE room_id=? AND user_id=?').run(roomId, targetId);
+      io.to(`room:${roomId}`).emit('member_left', { roomId, userId: targetId, username: target.username });
+      socket.emit('kick_done_offline', { roomId, username: target.username });
+    }
   });
-  socket.on('call_answer', ({ toUserId, sdp }) => {
-    toUser(toUserId, 'call_answer', { sdp });
+
+  socket.on('kick_accept', ({ roomId }) => {
+    const room = db.prepare('SELECT * FROM rooms WHERE id=?').get(roomId);
+    if (!room || !queries.isMember.get(roomId, user.id)) return;
+    db.prepare('DELETE FROM room_members WHERE room_id=? AND user_id=?').run(roomId, user.id);
+    socket.leave(`room:${roomId}`);
+    socket.emit('kick_done', { roomId });
+    io.to(`room:${roomId}`).emit('member_left', { roomId, userId: user.id, username: user.username });
   });
-  socket.on('call_ice', ({ toUserId, candidate }) => {
-    toUser(toUserId, 'call_ice', { candidate });
-  });
-  socket.on('call_reject', ({ toUserId }) => {
-    toUser(toUserId, 'call_rejected', {});
-  });
-  socket.on('call_end', ({ toUserId }) => {
-    toUser(toUserId, 'call_ended', {});
+
+  socket.on('kick_refuse', ({ roomId }) => {
+    const room = db.prepare('SELECT * FROM rooms WHERE id=?').get(roomId);
+    if (!room) return;
+    for (const [sid, u] of onlineUsers) {
+      if (u.id === room.created_by) io.to(sid).emit('kick_refused', { roomId, username: user.username });
+    }
   });
 
   socket.on('disconnect', () => {
