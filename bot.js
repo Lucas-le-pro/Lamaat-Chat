@@ -11,7 +11,6 @@ function initBot(name) {
   if (!user) {
     const res = queries.createUser.run(name, 'bot_no_login', BOT_AVATAR);
     user = { id: res.lastInsertRowid, username: name, avatar: BOT_AVATAR };
-    queries.addMember.run(1, user.id);
     return user;
   }
   if (user.password.startsWith('$2')) {
